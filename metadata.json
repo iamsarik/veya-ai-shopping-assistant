@@ -1,0 +1,6 @@
+{
+  "name": "Veya",
+  "description": "Voice-first grocery shopping assistant with natural voice command flows, shopping list management, and smart search.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
