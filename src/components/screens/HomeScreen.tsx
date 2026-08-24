@@ -3,6 +3,7 @@ import { Product, ShoppingListItem, CategoryInfo } from '../../types';
 import { CATEGORIES } from '../../data/products';
 import { Search, Mic, Plus, Sparkles, RefreshCw, Sun, ThumbsUp } from 'lucide-react';
 import { getPersonalizedRecommendations, getSeasonalRecommendations } from '../../utils/recommendations';
+import { t, getTranslatedCategory, getTranslatedProductName, getTranslatedPackageSize } from '../../utils/i18n';
 
 interface HomeScreenProps {
   onStartListening: () => void;
@@ -14,6 +15,7 @@ interface HomeScreenProps {
   onSeeAllCategories: () => void;
   featuredProducts: Product[];
   shoppingList: ShoppingListItem[];
+  currentLanguage?: string;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -26,6 +28,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onSeeAllCategories,
   featuredProducts,
   shoppingList,
+  currentLanguage = 'English',
 }) => {
   // Running low item: Whole Milk
   const runningLowItem = featuredProducts.find((p) => p.id === 'whole-milk') || featuredProducts[0];
@@ -41,10 +44,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* Greetings section */}
       <section className="pt-1">
         <p className="text-[13.5px] font-medium text-[#9da3c2] flex items-center gap-1.5">
-          Good morning <span className="text-base">👋</span>
+          {t('goodMorning', currentLanguage)} <span className="text-base">👋</span>
         </p>
         <h2 className="text-[21px] font-extrabold text-[#f3f4f8] tracking-tight leading-[26px] mt-0.5">
-          What do you need today?
+          {t('whatDoYouNeed', currentLanguage)}
         </h2>
       </section>
 
@@ -57,7 +60,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         >
           <Search className="w-4 h-4 text-[#8a90b0] group-hover:text-[#06b6d4] transition-colors stroke-[2.2]" />
           <span className="text-[14px] text-[#8a90b0] font-normal">
-            Search products...
+            {t('searchPlaceholder', currentLanguage)}
           </span>
         </div>
       </section>
@@ -76,25 +79,25 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="flex-1 pr-1">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#7059fd]/20 text-[#a899ff] text-[10.5px] font-extrabold tracking-wider uppercase mb-1.5 border border-[#7059fd]/35 shadow-[0_0_10px_rgba(112,89,253,0.15)]">
                 <Sparkles className="w-3 h-3 text-[#06b6d4]" />
-                <span>VOICE AI</span>
+                <span>{t('voiceAi', currentLanguage)}</span>
               </div>
 
               <h3 className="text-[17.5px] font-extrabold text-[#f3f4f8] tracking-tight leading-tight">
-                Speak to Veya
+                {t('speakToVeya', currentLanguage)}
               </h3>
               <p className="text-[13px] text-[#b0b4c8] mt-0.5 font-medium leading-[18px]">
-                &ldquo;Your shopping, just say it.&rdquo;
+                {t('voiceSubtext', currentLanguage)}
               </p>
 
               <div
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelectPrompt('Add 2 gallons of whole milk');
+                  onSelectPrompt(currentLanguage === 'हिन्दी' || currentLanguage === 'Hindi' ? 'दो लीटर दूध जोड़ें' : 'Add 2 gallons of whole milk');
                 }}
                 className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#111322]/90 text-[#a899ff] text-[11.5px] font-semibold border border-[#2b2f4c] shadow-xs hover:border-[#7059fd]/50 active:scale-95 transition-all"
               >
-                <span className="text-[#06b6d4] font-bold">Try:</span>
-                <span className="text-[#d8dbec] font-normal italic">&ldquo;Add 2 gallons of whole milk&rdquo;</span>
+                <span className="text-[#06b6d4] font-bold">{t('tryPromptLabel', currentLanguage)}</span>
+                <span className="text-[#d8dbec] font-normal italic">{t('tryPromptText', currentLanguage)}</span>
               </div>
             </div>
 
@@ -111,13 +114,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       <section className="flex flex-col gap-2 pt-1">
         <div className="flex items-center justify-between">
           <h3 className="text-[15px] font-bold text-[#f3f4f8] tracking-tight">
-            Categories
+            {t('categories', currentLanguage)}
           </h3>
           <button
             onClick={onSeeAllCategories}
             className="text-[12px] font-semibold text-[#8e7aff] hover:text-[#a899ff] cursor-pointer transition-colors bg-transparent border-none p-0"
           >
-            See all
+            {t('seeAll', currentLanguage)}
           </button>
         </div>
 
@@ -137,7 +140,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 />
               </div>
               <span className="text-[12px] font-semibold text-[#d4d7e8] group-hover:text-[#8e7aff] transition-colors text-center leading-tight break-words w-full">
-                {cat.name}
+                {getTranslatedCategory(cat.name, currentLanguage)}
               </span>
             </button>
           ))}
@@ -150,10 +153,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="text-[15px] font-bold text-[#f3f4f8] tracking-tight flex items-center gap-1.5">
               <RefreshCw className="w-4 h-4 text-[#06b6d4] stroke-[2.2]" />
-              <span>You may be running low</span>
+              <span>{t('runningLow', currentLanguage)}</span>
             </h3>
             <span className="text-[11.5px] font-medium text-[#7c819b]">
-              Based on history
+              {t('basedOnHistory', currentLanguage)}
             </span>
           </div>
 
@@ -172,13 +175,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
             <div className="flex-1 min-w-0 pr-2">
               <span className="text-[11px] font-bold text-[#8e7aff] uppercase tracking-wider">
-                {runningLowItem.category}
+                {getTranslatedCategory(runningLowItem.category, currentLanguage)}
               </span>
               <h4 className="text-[14.5px] font-bold text-[#f3f4f8] truncate">
-                {runningLowItem.name}
+                {getTranslatedProductName(runningLowItem, currentLanguage)}
               </h4>
               <p className="text-[12px] text-[#9da3c2]">
-                {runningLowItem.packageSize}
+                {getTranslatedPackageSize(runningLowItem, currentLanguage)}
               </p>
               <p className="text-[15.5px] font-extrabold text-[#ffffff] mt-0.5">
                 ${runningLowItem.price.toFixed(2)}
@@ -194,7 +197,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               className="px-3.5 py-2 rounded-xl bg-[#7059fd] hover:bg-[#5d44fa] text-white text-[12.5px] font-bold flex items-center gap-1 shadow-[0_4px_14px_rgba(112,89,253,0.35)] active:scale-95 transition-all cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>Add</span>
+              <span>{t('add', currentLanguage)}</span>
             </button>
           </div>
         </section>
@@ -205,10 +208,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="flex items-center justify-between">
           <h3 className="text-[15px] font-bold text-[#f3f4f8] tracking-tight flex items-center gap-1.5">
             <ThumbsUp className="w-4 h-4 text-[#8e7aff] stroke-[2.2]" />
-            <span>Smart Suggestions for You</span>
+            <span>{t('smartSuggestions', currentLanguage)}</span>
           </h3>
           <span className="text-[11.5px] font-medium text-[#7c819b]">
-            Personalized
+            {t('personalized', currentLanguage)}
           </span>
         </div>
 
@@ -230,10 +233,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
               <div className="flex flex-col pr-8">
                 <span className="text-[10px] font-bold text-[#8e7aff] uppercase tracking-wider">
-                  {product.category}
+                  {getTranslatedCategory(product.category, currentLanguage)}
                 </span>
                 <h4 className="text-[13px] font-bold text-[#f3f4f8] leading-[16px] truncate mt-0.5">
-                  {product.name}
+                  {getTranslatedProductName(product, currentLanguage)}
                 </h4>
                 <p className="text-[14.5px] font-extrabold text-[#ffffff] mt-1">
                   ${product.price.toFixed(2)}
@@ -261,10 +264,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div>
             <h3 className="text-[15px] font-bold text-[#f3f4f8] tracking-tight flex items-center gap-1.5">
               <Sun className="w-4 h-4 text-[#06b6d4] stroke-[2.2]" />
-              <span>{seasonalData.title}</span>
+              <span>{t('seasonalTitle', currentLanguage)}</span>
             </h3>
             <p className="text-[11.5px] text-[#7c819b] mt-0.5">
-              {seasonalData.subtitle}
+              {t('seasonalSubtitle', currentLanguage)}
             </p>
           </div>
         </div>
@@ -287,10 +290,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
               <div className="flex flex-col pr-8">
                 <span className="text-[10px] font-bold text-[#06b6d4] uppercase tracking-wider">
-                  {product.category}
+                  {getTranslatedCategory(product.category, currentLanguage)}
                 </span>
                 <h4 className="text-[13px] font-bold text-[#f3f4f8] leading-[16px] truncate mt-0.5">
-                  {product.name}
+                  {getTranslatedProductName(product, currentLanguage)}
                 </h4>
                 <p className="text-[14.5px] font-extrabold text-[#ffffff] mt-1">
                   ${product.price.toFixed(2)}

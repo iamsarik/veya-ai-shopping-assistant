@@ -1,23 +1,26 @@
 import React from 'react';
 import { CategoryInfo } from '../../types';
 import { CATEGORIES } from '../../data/products';
+import { t, getTranslatedCategory } from '../../utils/i18n';
 
 interface AllCategoriesScreenProps {
   onSelectCategory: (categoryName: string) => void;
+  currentLanguage?: string;
 }
 
 export const AllCategoriesScreen: React.FC<AllCategoriesScreenProps> = ({
   onSelectCategory,
+  currentLanguage = 'English',
 }) => {
   return (
     <main className="flex-1 px-4 pt-3 pb-[100px] flex flex-col gap-4 relative z-10">
       {/* Section header */}
       <section className="pt-1">
         <h2 className="text-[18px] font-extrabold text-[#f3f4f8] tracking-tight leading-snug">
-          All Categories
+          {t('allCategoriesTitle', currentLanguage)}
         </h2>
         <p className="text-[13px] text-[#9da3c2] mt-0.5">
-          {CATEGORIES.length} categories available
+          {CATEGORIES.length} {t('categoriesAvailable', currentLanguage)}
         </p>
       </section>
 
@@ -42,7 +45,7 @@ export const AllCategoriesScreen: React.FC<AllCategoriesScreenProps> = ({
 
               {/* Category name — wraps naturally, centered under icon */}
               <span className="text-[11.5px] font-semibold text-[#d4d7e8] group-hover:text-[#8e7aff] transition-colors text-center leading-tight break-words w-full">
-                {cat.name}
+                {getTranslatedCategory(cat.name, currentLanguage)}
               </span>
             </button>
           ))}

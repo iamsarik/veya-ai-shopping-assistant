@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Mic, Sparkles, Volume2, AlertTriangle, Loader2 } from 'lucide-react';
+import { t, isHindi as checkIsHindi } from '../../utils/i18n';
 
 interface ListeningScreenProps {
   transcript: string;
@@ -40,7 +41,7 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  const isHindi = currentLanguage === 'हिन्दी' || currentLanguage === 'Hindi';
+  const isHindi = checkIsHindi(currentLanguage);
 
   const sampleCommands = isHindi
     ? [
@@ -72,21 +73,21 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
         <div className="w-full flex flex-col items-center text-center pt-1 shrink-0">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#151829]/90 border border-[#2b2f4c] text-[#a899ff] text-[12px] font-bold shadow-sm mb-2">
             <Sparkles className="w-3.5 h-3.5 text-[#06b6d4]" />
-            <span>Veya Voice Assistant</span>
+            <span>{t('veyaVoiceAssistant', currentLanguage)}</span>
             <span className="text-[#3b3f63]">•</span>
             <span className="text-[#06b6d4] font-extrabold">{currentLanguage}</span>
           </div>
           <h2 className="text-[20px] sm:text-[22px] font-extrabold text-[#f3f4f8] tracking-tight">
             {errorMessage
-              ? 'Command Failed'
+              ? t('commandFailed', currentLanguage)
               : isProcessing
-              ? 'Analyzing command…'
+              ? t('analyzingStatus', currentLanguage)
               : isListening
-              ? `Listening${dots}`
-              : 'Voice Assistant'}
+              ? `${t('listeningStatus', currentLanguage)}${dots}`
+              : t('voiceAssistantTitle', currentLanguage)}
           </h2>
           <p className="text-[12.5px] sm:text-[13px] text-[#9da3c2] mt-0.5 max-w-[260px]">
-            Speak naturally to add groceries, search products, or manage your list.
+            {t('listeningHelpText', currentLanguage)}
           </p>
         </div>
 
@@ -128,11 +129,11 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
             <div className="flex items-center justify-between mb-1">
               <span className="text-[11px] font-bold text-[#8a90b0] uppercase tracking-wider flex items-center gap-1">
                 <Volume2 className="w-3.5 h-3.5 text-[#06b6d4]" />
-                Heard Transcript
+                {t('heardTranscript', currentLanguage)}
               </span>
               {transcript && (
                 <span className="text-[11px] font-bold text-[#05df72] bg-[#05df72]/15 border border-[#05df72]/30 px-2 py-0.5 rounded-full">
-                  Active
+                  {t('activeStatus', currentLanguage)}
                 </span>
               )}
             </div>
@@ -141,7 +142,7 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
                 `“${transcript}”`
               ) : (
                 <span className="text-[#6d728e] font-normal italic">
-                  {isHindi ? 'कहें जैसे "दो लीटर दूध जोड़ें"...' : 'Say something like "Add 2 gallons of whole milk"...'}
+                  {t('saySomethingLike', currentLanguage)}
                 </span>
               )}
             </p>
@@ -150,7 +151,7 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
           {/* Suggested Quick Voice Commands */}
           <div className="flex flex-col gap-1.5">
             <span className="text-[11.5px] font-semibold text-[#9da3c2] px-1">
-              {isHindi ? 'त्वरित कमांड पर टैप करें:' : 'Tap a quick command:'}
+              {t('tapQuickCommand', currentLanguage)}
             </span>
             <div className="flex flex-wrap gap-1.5 max-h-[105px] overflow-y-auto scrollbar-none">
               {sampleCommands.map((cmd) => (
@@ -179,7 +180,7 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
                   onClick={onClearError}
                   className="self-start px-3 py-1 rounded-full bg-[#7059fd] hover:bg-[#5d44fa] text-white text-[11.5px] font-bold transition-all active:scale-95 cursor-pointer"
                 >
-                  Try Again
+                  {t('tryAgain', currentLanguage)}
                 </button>
               )}
             </div>
@@ -194,20 +195,20 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
             onClick={onCancel}
             className="flex-1 py-3 rounded-2xl bg-[#141624] hover:bg-[#1b1e32] text-[#b0b4c8] border border-[#272b47] text-[13.5px] font-bold transition-all active:scale-95 cursor-pointer"
           >
-            Cancel
+            {t('cancel', currentLanguage)}
           </button>
           {transcript && !isProcessing && (
             <button
               onClick={() => onSubmitCommand(transcript)}
               className="flex-1 py-3 rounded-2xl bg-[#7059fd] hover:bg-[#5d44fa] text-white text-[13.5px] font-bold transition-all active:scale-95 cursor-pointer shadow-[0_4px_16px_rgba(112,89,253,0.35)]"
             >
-              Confirm Command
+              {t('confirmCommand', currentLanguage)}
             </button>
           )}
           {isProcessing && (
             <div className="flex-1 py-3 rounded-2xl bg-[#1e1b3a] border border-[#7059fd]/40 text-[#a899ff] text-[13.5px] font-bold flex items-center justify-center gap-2 select-none">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Analyzing…</span>
+              <span>{t('analyzing', currentLanguage)}</span>
             </div>
           )}
         </div>

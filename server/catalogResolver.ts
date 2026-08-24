@@ -2,27 +2,42 @@ import { INITIAL_PRODUCTS } from '../src/data/products';
 import type { Product } from '../src/types';
 
 /**
- * Normalizes a product name for safe exact comparison.
- * No fuzzy/token-overlap matching is used here.
+ * Normalizes a product name for safe comparison.
+ * Preserves letters (including Devanagari/Hindi) and numbers.
  */
 const normalize = (value: string): string =>
     value
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/[^\p{L}\p{N}]+/gu, ' ')
         .replace(/\s+/g, ' ');
 
 /**
  * Explicit aliases only.
  *
- * These are intentionally limited to unambiguous mappings.
- * Do NOT add broad aliases such as "socks" -> "socket".
+ * Includes English and Hindi common product names.
  */
 const PRODUCT_ALIASES: Record<string, string> = {
     milk: 'Whole Milk',
+    'दूध': 'Whole Milk',
+    doodh: 'Whole Milk',
     bread: 'Classic White Bread',
+    'ब्रेड': 'Classic White Bread',
     highlighters: 'Neon Highlighter Set',
     highlighter: 'Neon Highlighter Set',
+    'टमाटर': 'Fresh Organic Tomatoes',
+    'सेब': 'Organic Apples 1kg',
+    'केले': 'Fresh Organic Bananas',
+    'अंडे': 'Farm Fresh Eggs (12 pcs)',
+    'दही': 'Low-Fat Greek Yogurt',
+    'चॉकलेट': 'Dark Chocolate Bar 100g',
+    'चाय': 'Assam Black Tea Bag Box',
+    'पानी': 'Mineral Water 1L',
+    'चावल': 'Basmati Rice 5kg',
+    'आटा': 'Whole Wheat Atta 5kg',
+    'मक्खन': 'Salted Butter 500g',
+    'जुराब': 'Cotton Ankle Socks',
+    'टूथपेस्ट': 'Sensodyne Toothpaste',
 };
 
 /**

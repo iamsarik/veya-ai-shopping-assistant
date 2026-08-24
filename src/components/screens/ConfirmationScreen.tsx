@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, VoiceRecognizedItem } from '../../types';
 import { Check, X, Minus, Plus, Sparkles, Volume2, SearchX, Mic, AlertCircle } from 'lucide-react';
+import { t, getTranslatedCategory, getTranslatedProductName, getTranslatedPackageSize } from '../../utils/i18n';
 
 interface ConfirmationScreenProps {
   transcript: string;
@@ -10,6 +11,7 @@ interface ConfirmationScreenProps {
   onConfirm: (product: Product, quantity: number) => void;
   onConfirmMultiple?: (items: { product: Product; quantity: number }[]) => void;
   onCancel: () => void;
+  currentLanguage?: string;
 }
 
 export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
@@ -20,6 +22,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
   onConfirm,
   onConfirmMultiple,
   onCancel,
+  currentLanguage = 'English',
 }) => {
   const [itemsState, setItemsState] = useState<VoiceRecognizedItem[]>(() => {
     if (recognizedItems && recognizedItems.length > 0) {
@@ -89,13 +92,13 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
           <section className="text-center pt-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#2a1725]/90 border border-[#4d253b] text-[#ff7fa1] text-[12px] font-bold shadow-sm mb-2">
               <Sparkles className="w-3.5 h-3.5 text-[#ff4b72]" />
-              <span>Product Not Found</span>
+              <span>{t('productNotFound', currentLanguage)}</span>
             </div>
             <h2 className="text-[20px] font-extrabold text-[#f3f4f8] tracking-tight">
-              Sorry, I couldn&apos;t find that product.
+              {t('couldNotFindProduct', currentLanguage)}
             </h2>
             <p className="text-[13px] text-[#9da3c2] mt-0.5">
-              That item isn&apos;t currently available in Veya&apos;s catalog.
+              {t('itemNotAvailable', currentLanguage)}
             </p>
           </section>
 
@@ -103,7 +106,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
           <section className="dark-glass-surface rounded-2xl p-3.5 border border-[#2b2f4c] shadow-sm">
             <div className="flex items-center gap-2 text-[11px] font-bold text-[#8a90b0] uppercase tracking-wider mb-1">
               <Volume2 className="w-3.5 h-3.5 text-[#06b6d4]" />
-              <span>Veya Heard</span>
+              <span>{t('heardTranscript', currentLanguage)}</span>
             </div>
             <p className="text-[14.5px] font-bold text-[#f3f4f8] italic">
               &ldquo;{transcript}&rdquo;
@@ -117,10 +120,10 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
             </div>
             <div>
               <h3 className="text-[16px] font-extrabold text-[#f3f4f8]">
-                Item Not Available
+                {t('productNotFound', currentLanguage)}
               </h3>
               <p className="text-[12.5px] text-[#9da3c2] mt-1 max-w-[240px] leading-relaxed">
-                Try searching for another product, or say items like milk, bread, or non stick pan.
+                {t('itemNotAvailable', currentLanguage)}
               </p>
             </div>
           </section>
@@ -134,7 +137,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
             className="w-full py-3.5 rounded-2xl veya-voice-gradient text-white text-[14.5px] font-extrabold flex items-center justify-center gap-2 shadow-[0_6px_20px_rgba(112,89,253,0.4)] active:scale-95 transition-all cursor-pointer"
           >
             <Mic className="w-4 h-4 stroke-[2.2]" />
-            <span>Try Another Command</span>
+            <span>{t('tryAgain', currentLanguage)}</span>
           </button>
         </div>
       </main>
@@ -154,15 +157,13 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
         <section className="text-center pt-1">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#151829]/90 border border-[#2b2f4c] text-[#a899ff] text-[12px] font-bold shadow-sm mb-2">
             <Sparkles className="w-3.5 h-3.5 text-[#06b6d4]" />
-            <span>Voice Command Confirmation</span>
+            <span>{t('itemsRecognized', currentLanguage)}</span>
           </div>
           <h2 className="text-[20px] font-extrabold text-[#f3f4f8] tracking-tight">
-            {isMultiItem ? 'Did you mean to add these?' : 'Did you mean to add this?'}
+            {t('itemsRecognized', currentLanguage)}
           </h2>
           <p className="text-[13px] text-[#9da3c2] mt-0.5">
-            {isMultiItem
-              ? 'Review the items recognized by Veya before adding to your list.'
-              : 'Review the item recognized by Veya before adding to your list.'}
+            {t('reviewVoiceItems', currentLanguage)}
           </p>
         </section>
 
@@ -170,7 +171,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
         <section className="dark-glass-surface rounded-2xl p-3.5 border border-[#2b2f4c] shadow-sm">
           <div className="flex items-center gap-2 text-[11px] font-bold text-[#8a90b0] uppercase tracking-wider mb-1">
             <Volume2 className="w-3.5 h-3.5 text-[#06b6d4]" />
-            <span>Veya Heard</span>
+            <span>{t('heardTranscript', currentLanguage)}</span>
           </div>
           <p className="text-[14.5px] font-bold text-[#f3f4f8] italic">
             &ldquo;{transcript || 'Add milk and bread'}&rdquo;
@@ -190,10 +191,10 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#05df72]/15 text-[#05df72] border border-[#05df72]/30 inline-flex items-center gap-1">
-                      <Check className="w-3 h-3 stroke-[3]" /> Available
+                      <Check className="w-3 h-3 stroke-[3]" /> {t('activeStatus', currentLanguage)}
                     </span>
                     <span className="text-[11px] font-bold text-[#8e7aff] uppercase tracking-wider">
-                      {item.product.category}
+                      {getTranslatedCategory(item.product.category, currentLanguage)}
                     </span>
                   </div>
 
@@ -209,13 +210,13 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
 
                     <div className="flex-1 min-w-0">
                       <h3 className="text-[15.5px] font-extrabold text-[#f3f4f8] leading-tight truncate">
-                        {item.product.name}
+                        {getTranslatedProductName(item.product, currentLanguage)}
                       </h3>
                       <p className="text-[12px] text-[#9da3c2]">
-                        {item.unit ? `${item.unit} • ${item.product.packageSize}` : item.product.packageSize}
+                        {item.unit ? `${item.unit} • ${getTranslatedPackageSize(item.product, currentLanguage)}` : getTranslatedPackageSize(item.product, currentLanguage)}
                       </p>
                       <p className="text-[13.5px] font-semibold text-[#c5c9de] mt-0.5">
-                        ${item.product.price.toFixed(2)} / unit
+                        ${item.product.price.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -226,7 +227,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[11.5px] font-semibold text-[#8a90b0] block">
-                        Quantity
+                        {t('quantity', currentLanguage)}
                       </span>
                       <div className="flex items-center gap-2.5 mt-1 bg-[#0e101c] px-2.5 py-1 rounded-full border border-[#252942]">
                         <button
@@ -251,7 +252,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
 
                     <div className="text-right">
                       <span className="text-[11.5px] font-semibold text-[#8a90b0] block">
-                        Subtotal
+                        {t('subtotal', currentLanguage)}
                       </span>
                       <span className="text-[18px] font-black text-[#ffffff] tracking-tight">
                         ${itemTotal}
@@ -273,12 +274,12 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
                         &ldquo;{item.rawText}&rdquo;
                       </span>
                       <p className="text-[11px] text-[#ff7fa1]">
-                        {item.unit ? `${item.quantity} ${item.unit} • Not available` : item.quantity > 1 ? `Qty: ${item.quantity} • Not available` : 'Not available in Veya catalog'}
+                        {item.unit ? `${item.quantity} ${item.unit} • ${t('itemNotAvailable', currentLanguage)}` : item.quantity > 1 ? `Qty: ${item.quantity} • ${t('itemNotAvailable', currentLanguage)}` : t('itemNotAvailable', currentLanguage)}
                       </p>
                     </div>
                   </div>
                   <span className="text-[11px] font-bold text-[#ff7fa1] px-2.5 py-0.5 rounded-full bg-[#3b1c28] border border-[#522336] shrink-0">
-                    Unavailable
+                    {t('productNotFound', currentLanguage)}
                   </span>
                 </section>
               );
@@ -297,9 +298,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
           <div className="flex items-center gap-2">
             <Check className="w-5 h-5 stroke-[2.5]" />
             <span>
-              {isMultiItem
-                ? `Confirm & Add ${foundItems.length} Items to List`
-                : 'Confirm & Add to List'}
+              {t('confirmAndAdd', currentLanguage)}
             </span>
           </div>
           <span className="text-[16px] font-black bg-black/25 px-2.5 py-0.5 rounded-lg border border-white/10">
@@ -313,7 +312,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
           className="w-full py-3 rounded-2xl bg-[#141624] hover:bg-[#1b1e32] text-[#b0b4c8] hover:text-white border border-[#272b47] text-[13.5px] font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
         >
           <X className="w-4 h-4 stroke-[2]" />
-          <span>Cancel & Try Again</span>
+          <span>{t('cancel', currentLanguage)}</span>
         </button>
       </div>
     </main>

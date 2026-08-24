@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavTab } from '../types';
 import { Home, Search, Mic, ShoppingBag, User } from 'lucide-react';
+import { t } from '../utils/i18n';
 
 interface BottomNavBarProps {
   activeTab: NavTab;
@@ -8,6 +9,7 @@ interface BottomNavBarProps {
   onMicClick: () => void;
   isListening?: boolean;
   listCount?: number;
+  currentLanguage?: string;
 }
 
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({
@@ -16,6 +18,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   onMicClick,
   isListening = false,
   listCount = 0,
+  currentLanguage = 'English',
 }) => {
   return (
     <nav
@@ -36,7 +39,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           <Home className={`w-[22px] h-[22px] ${activeTab === 'home' ? 'stroke-[2.4]' : 'stroke-[1.8]'}`} />
         </div>
         <span className="text-[10.5px] font-semibold mt-0.5">
-          Home
+          {t('navHome', currentLanguage)}
         </span>
       </button>
 
@@ -54,7 +57,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           <Search className={`w-[22px] h-[22px] ${activeTab === 'search' ? 'stroke-[2.4]' : 'stroke-[1.8]'}`} />
         </div>
         <span className="text-[10.5px] font-semibold mt-0.5">
-          Search
+          {t('navSearch', currentLanguage)}
         </span>
       </button>
 
@@ -71,7 +74,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
         <button
           id="central-voice-orb-button"
           onClick={onMicClick}
-          aria-label="Voice shopping assistant"
+          aria-label={t('navVoice', currentLanguage)}
           className="relative flex flex-col items-center justify-center w-[58px] h-[58px] rounded-full veya-voice-gradient veya-voice-glow transform hover:scale-105 active:scale-95 transition-all duration-200 border-[3.5px] border-[#0c0d18] cursor-pointer group focus:outline-none shadow-[0_8px_28px_rgba(112,89,253,0.45)]"
         >
           <Mic className="w-6 h-6 text-white stroke-[2.3] group-hover:scale-110 transition-transform drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]" />
@@ -98,7 +101,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           )}
         </div>
         <span className="text-[10.5px] font-semibold mt-0.5">
-          List
+          {t('navList', currentLanguage)}
         </span>
       </button>
 
@@ -116,7 +119,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           <User className={`w-[22px] h-[22px] ${activeTab === 'profile' ? 'stroke-[2.4]' : 'stroke-[1.8]'}`} />
         </div>
         <span className="text-[10.5px] font-semibold mt-0.5">
-          Profile
+          {t('navProfile', currentLanguage)}
         </span>
       </button>
     </nav>

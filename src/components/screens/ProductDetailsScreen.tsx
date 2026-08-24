@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Product } from '../../types';
 import { Minus, Plus, ShoppingBag, Mic, Check, Heart, ShieldCheck, Truck, RefreshCw } from 'lucide-react';
 import { getSubstituteRecommendations } from '../../utils/recommendations';
+import { t, getTranslatedCategory, getTranslatedProductName, getTranslatedPackageSize } from '../../utils/i18n';
 
 interface ProductDetailsScreenProps {
   product: Product;
@@ -11,6 +12,7 @@ interface ProductDetailsScreenProps {
   onToggleFavorite?: () => void;
   allProducts?: Product[];
   onSelectProduct?: (product: Product) => void;
+  currentLanguage?: string;
 }
 
 export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
@@ -21,6 +23,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
   onToggleFavorite,
   allProducts = [],
   onSelectProduct,
+  currentLanguage = 'English',
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
@@ -53,11 +56,11 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
         {/* Floating Organic & Category Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
           <span className="bg-[#7059fd]/85 backdrop-blur-md text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm">
-            {product.category.toUpperCase()}
+            {getTranslatedCategory(product.category, currentLanguage).toUpperCase()}
           </span>
           {product.isOrganic && (
             <span className="bg-[#05df72]/20 backdrop-blur-md text-[#05df72] border border-[#05df72]/40 text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm">
-              100% ORGANIC
+              {t('organicBadge', currentLanguage)}
             </span>
           )}
         </div>
@@ -78,7 +81,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
       <section className="flex flex-col gap-1">
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-[20px] font-extrabold text-[#f3f4f8] tracking-tight leading-tight">
-            {product.name}
+            {getTranslatedProductName(product, currentLanguage)}
           </h2>
           <span className="text-[22px] font-black text-[#ffffff] shrink-0">
             ${product.price.toFixed(2)}
@@ -86,7 +89,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
         </div>
 
         <p className="text-[13px] font-semibold text-[#8e7aff]">
-          {product.packageSize}
+          {getTranslatedPackageSize(product, currentLanguage)}
         </p>
 
         {/* Rating and Delivery notes */}
@@ -96,7 +99,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
           </span>
           <span>•</span>
           <span className="flex items-center gap-1 text-[#05df72] font-semibold">
-            <Truck className="w-3.5 h-3.5" /> In stock • Delivery in 30 mins
+            <Truck className="w-3.5 h-3.5" /> {product.inStock !== false ? t('inStockDelivery', currentLanguage) : t('outOfStock', currentLanguage)}
           </span>
         </div>
       </section>
@@ -113,40 +116,30 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
             </div>
             <div className="min-w-0">
               <p className="text-[12.5px] font-bold text-[#f3f4f8] truncate">
-                Ask Veya about this item
+                {t('speakToVeya', currentLanguage)}
               </p>
               <p className="text-[11px] text-[#9da3c2] truncate">
-                &ldquo;Is this gluten free?&rdquo; or &ldquo;Add to weekly staples&rdquo;
+                {t('voiceSubtext', currentLanguage)}
               </p>
             </div>
           </div>
 
           <span className="text-[11px] font-extrabold text-[#8e7aff] px-2 py-1 rounded-lg bg-[#7059fd]/15 shrink-0 border border-[#7059fd]/30">
-            Ask
+            {t('speak', currentLanguage)}
           </span>
         </div>
-      </section>
-
-      {/* Description */}
-      <section className="bg-[#141626]/90 rounded-2xl p-3.5 border border-[#252942] shadow-sm flex flex-col gap-1.5">
-        <h3 className="text-[13.5px] font-bold text-[#f3f4f8]">
-          Description
-        </h3>
-        <p className="text-[12.5px] text-[#b0b4c8] leading-[19px]">
-          {product.description}
-        </p>
       </section>
 
       {/* Nutritional Highlights Grid */}
       {product.nutrition && (
         <section className="flex flex-col gap-2">
           <h3 className="text-[13.5px] font-bold text-[#f3f4f8]">
-            Nutritional Highlights
+            {t('nutritionFacts', currentLanguage)}
           </h3>
           <div className="grid grid-cols-4 gap-2">
             <div className="bg-[#101222] rounded-xl p-2 text-center border border-[#21243a]">
               <span className="text-[10px] text-[#7c819b] font-semibold uppercase block">
-                Calories
+                {t('calories', currentLanguage)}
               </span>
               <span className="text-[13px] font-extrabold text-[#f3f4f8] mt-0.5 block">
                 {product.nutrition.calories}
@@ -154,7 +147,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
             </div>
             <div className="bg-[#101222] rounded-xl p-2 text-center border border-[#21243a]">
               <span className="text-[10px] text-[#7c819b] font-semibold uppercase block">
-                Protein
+                {t('protein', currentLanguage)}
               </span>
               <span className="text-[13px] font-extrabold text-[#f3f4f8] mt-0.5 block">
                 {product.nutrition.protein}
@@ -162,7 +155,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
             </div>
             <div className="bg-[#101222] rounded-xl p-2 text-center border border-[#21243a]">
               <span className="text-[10px] text-[#7c819b] font-semibold uppercase block">
-                Carbs
+                {t('carbs', currentLanguage)}
               </span>
               <span className="text-[13px] font-extrabold text-[#f3f4f8] mt-0.5 block">
                 {product.nutrition.carbs}
@@ -170,7 +163,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
             </div>
             <div className="bg-[#101222] rounded-xl p-2 text-center border border-[#21243a]">
               <span className="text-[10px] text-[#7c819b] font-semibold uppercase block">
-                Fat
+                {t('fat', currentLanguage)}
               </span>
               <span className="text-[13px] font-extrabold text-[#f3f4f8] mt-0.5 block">
                 {product.nutrition.fat}
@@ -186,10 +179,10 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="text-[13.5px] font-bold text-[#f3f4f8] flex items-center gap-1.5">
               <RefreshCw className="w-4 h-4 text-[#06b6d4]" />
-              <span>Smart Substitutes & Alternatives</span>
+              <span>{t('similarAlternatives', currentLanguage)}</span>
             </h3>
             <span className="text-[11px] font-medium text-[#8e7aff]">
-              Same Category
+              {getTranslatedCategory(product.category, currentLanguage)}
             </span>
           </div>
 
@@ -210,10 +203,10 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-[13px] font-bold text-[#f3f4f8] truncate">
-                    {sub.name}
+                    {getTranslatedProductName(sub, currentLanguage)}
                   </h4>
                   <p className="text-[11.5px] text-[#9da3c2]">
-                    {sub.packageSize} • ${sub.price.toFixed(2)}
+                    {getTranslatedPackageSize(sub, currentLanguage)} • ${sub.price.toFixed(2)}
                   </p>
                 </div>
                 <button
@@ -224,22 +217,13 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
                   className="px-3 py-1.5 rounded-xl bg-[#7059fd] hover:bg-[#5d44fa] text-white text-[11.5px] font-bold flex items-center gap-1 active:scale-95 transition-all cursor-pointer shrink-0"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add</span>
+                  <span>{t('add', currentLanguage)}</span>
                 </button>
               </div>
             ))}
           </div>
         </section>
       )}
-
-      {/* Quality Guarantees */}
-      <section className="flex items-center justify-between text-[11.5px] text-[#9da3c2] px-1 py-1">
-        <span className="flex items-center gap-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#05df72]" /> 100% Freshness guarantee
-        </span>
-        <span>•</span>
-        <span>Local Farm Sourced</span>
-      </section>
 
       {/* Bottom Sticky Add to Cart Control */}
       <div className="fixed bottom-[78px] left-1/2 -translate-x-1/2 w-full max-w-[500px] px-4 py-3 bg-[#0c0d18]/95 backdrop-blur-xl border-t border-[#20233b] z-30 shadow-[0_-6px_24px_rgba(0,0,0,0.5)] flex items-center gap-3">
@@ -274,12 +258,12 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
           {justAdded ? (
             <>
               <Check className="w-4 h-4 stroke-[3]" />
-              <span>Added to List!</span>
+              <span>{t('addedToListToast', currentLanguage)}</span>
             </>
           ) : (
             <>
               <ShoppingBag className="w-4 h-4" />
-              <span>Add to List • ${totalPrice}</span>
+              <span>{t('addToList', currentLanguage)} • ${totalPrice}</span>
             </>
           )}
         </button>

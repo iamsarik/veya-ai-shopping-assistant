@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShoppingListItem } from '../../types';
 import { Trash2, Plus, Minus, Check, ShoppingBag, Mic, Sparkles, ArrowRight } from 'lucide-react';
+import { t, getTranslatedProductName, getTranslatedPackageSize } from '../../utils/i18n';
 
 interface ShoppingListScreenProps {
   items: ShoppingListItem[];
@@ -10,6 +11,7 @@ interface ShoppingListScreenProps {
   onStartListening: () => void;
   onBrowseProducts: () => void;
   onCheckout: () => void;
+  currentLanguage?: string;
 }
 
 export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
@@ -20,6 +22,7 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
   onStartListening,
   onBrowseProducts,
   onCheckout,
+  currentLanguage = 'English',
 }) => {
   const subtotal = items.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
@@ -35,13 +38,13 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
       <section className="flex items-center justify-between pt-1">
         <div>
           <h2 className="text-[21px] font-extrabold text-[#f3f4f8] tracking-tight flex items-center gap-2">
-            <span>Shopping List</span>
+            <span>{t('shoppingListTitle', currentLanguage)}</span>
             <span className="text-[12px] font-extrabold bg-[#7059fd]/20 text-[#a899ff] border border-[#7059fd]/35 px-2 py-0.5 rounded-full">
-              {items.length} {items.length === 1 ? 'item' : 'items'}
+              {items.length} {items.length === 1 ? t('item', currentLanguage) : t('items', currentLanguage)}
             </span>
           </h2>
           <p className="text-[12.5px] text-[#9da3c2]">
-            {activeCount} items to pick up
+            {activeCount} {t('itemsToPickUp', currentLanguage)}
           </p>
         </div>
 
@@ -50,7 +53,7 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full veya-voice-gradient text-white text-[12px] font-bold shadow-[0_3px_12px_rgba(112,89,253,0.35)] active:scale-95 transition-all cursor-pointer"
         >
           <Mic className="w-3.5 h-3.5" />
-          <span>Voice Add</span>
+          <span>{t('voiceAdd', currentLanguage)}</span>
         </button>
       </section>
 
@@ -61,10 +64,10 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
             <ShoppingBag className="w-8 h-8 stroke-[1.8]" />
           </div>
           <h3 className="text-[17px] font-bold text-[#f3f4f8]">
-            Your shopping list is empty
+            {t('listEmptyTitle', currentLanguage)}
           </h3>
           <p className="text-[13px] text-[#9da3c2] max-w-[220px] mt-1 mb-5">
-            Tap the microphone to quickly add groceries with your voice.
+            {t('listEmptySubtitle', currentLanguage)}
           </p>
 
           <button
@@ -72,7 +75,7 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
             className="flex items-center gap-2 px-5 py-2.5 rounded-2xl veya-voice-gradient text-white text-[13.5px] font-extrabold shadow-md active:scale-95 transition-all cursor-pointer"
           >
             <Mic className="w-4 h-4" />
-            <span>Say &ldquo;Add milk, eggs, bread&rdquo;</span>
+            <span>{t('sayAddMilk', currentLanguage)}</span>
           </button>
         </section>
       ) : (
@@ -122,10 +125,10 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
                         : 'text-[#f3f4f8]'
                     }`}
                   >
-                    {item.product.name}
+                    {getTranslatedProductName(item.product, currentLanguage)}
                   </h4>
                   <p className="text-[11.5px] text-[#9da3c2] truncate">
-                    {item.product.packageSize} • ${item.product.price.toFixed(2)}/ea
+                    {getTranslatedPackageSize(item.product, currentLanguage)} • ${item.product.price.toFixed(2)}/ea
                   </p>
                   <p className="text-[13.5px] font-extrabold text-[#ffffff] mt-0.5">
                     ${itemTotal}
@@ -174,14 +177,14 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#06b6d4]" />
             <span className="text-[12.5px] font-semibold text-[#b0b4c8]">
-              Need more items?
+              {t('lookingForSomethingElse', currentLanguage)}
             </span>
           </div>
           <button
             onClick={onBrowseProducts}
             className="text-[12px] font-bold text-[#8e7aff] hover:text-[#a899ff] cursor-pointer"
           >
-            Browse Products &rarr;
+            {t('navSearch', currentLanguage)} &rarr;
           </button>
         </section>
       )}
@@ -191,15 +194,15 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
         <div className="fixed bottom-[78px] left-1/2 -translate-x-1/2 w-full max-w-[500px] px-4 py-3 bg-[#0c0d18]/95 backdrop-blur-xl border-t border-[#20233b] z-30 shadow-[0_-6px_24px_rgba(0,0,0,0.5)]">
           <div className="flex flex-col gap-1 mb-2.5">
             <div className="flex justify-between text-[12px] text-[#9da3c2]">
-              <span>Subtotal</span>
+              <span>{t('subtotal', currentLanguage)}</span>
               <span className="font-semibold text-[#d4d7e8]">${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-[12px] text-[#9da3c2]">
-              <span>Estimated Tax</span>
+              <span>{t('estimatedTax', currentLanguage)}</span>
               <span className="font-semibold text-[#d4d7e8]">${tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-[15px] font-black text-[#ffffff] pt-1 border-t border-[#1f2237]">
-              <span>Total (USD)</span>
+              <span>{t('total', currentLanguage)}</span>
               <span className="text-[17px] text-[#ffffff]">${total.toFixed(2)}</span>
             </div>
           </div>
@@ -208,7 +211,7 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
             onClick={onCheckout}
             className="w-full py-3 rounded-2xl bg-[#7059fd] hover:bg-[#5d44fa] text-white text-[14.5px] font-extrabold flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(112,89,253,0.35)] active:scale-95 transition-all cursor-pointer"
           >
-            <span>Proceed to Checkout</span>
+            <span>{t('proceedToCheckout', currentLanguage)}</span>
             <ArrowRight className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>

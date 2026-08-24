@@ -882,6 +882,7 @@ export default function App() {
               onSeeAllCategories={() => navigateTo('categories')}
               featuredProducts={allProducts}
               shoppingList={shoppingList}
+              currentLanguage={currentLanguage}
             />
           )}
 
@@ -889,6 +890,7 @@ export default function App() {
           {currentScreen === 'categories' && (
             <AllCategoriesScreen
               onSelectCategory={handleSelectCategory}
+              currentLanguage={currentLanguage}
             />
           )}
 
@@ -899,6 +901,7 @@ export default function App() {
                 navigateTo('listening');
                 startVoiceRecording();
               }}
+              currentLanguage={currentLanguage}
             />
           )}
 
@@ -936,6 +939,7 @@ export default function App() {
                 handleAddMultipleToList(items);
               }}
               onCancel={() => navigateTo('listening')}
+              currentLanguage={currentLanguage}
             />
           )}
 
@@ -951,6 +955,7 @@ export default function App() {
                 startVoiceRecording();
               }}
               onGoHome={() => navigateTo('home', 'home')}
+              currentLanguage={currentLanguage}
             />
           )}
 
@@ -967,8 +972,9 @@ export default function App() {
               }}
               onBrowseProducts={() => navigateTo('home', 'home')}
               onCheckout={() => {
-                showToast('Order submitted! Delivery arriving in 30 mins.');
+                showToast(currentLanguage === 'हिन्दी' || currentLanguage === 'Hindi' ? 'ऑर्डर सबमिट किया गया! 30 मिनट में डिलीवरी पहुंच जाएगी।' : 'Order submitted! Delivery arriving in 30 mins.');
               }}
+              currentLanguage={currentLanguage}
             />
           )}
 
@@ -985,6 +991,7 @@ export default function App() {
               }}
               onSearchChange={(newQuery) => setSearchQuery(newQuery)}
               addedProductIds={shoppingList.map((item) => item.productId)}
+              currentLanguage={currentLanguage}
             />
           )}
 
@@ -994,13 +1001,14 @@ export default function App() {
               product={selectedProduct}
               onAddToCart={(prod, qty) => handleAddToList(prod, qty)}
               onStartVoiceWithProduct={(name) => {
-                setVoiceTranscript(`Tell me about ${name}`);
+                setVoiceTranscript(currentLanguage === 'हिन्दी' || currentLanguage === 'Hindi' ? `${name} के बारे में बताएं` : `Tell me about ${name}`);
                 navigateTo('listening');
               }}
               isFavorite={favoriteProductIds.includes(selectedProduct.id)}
               onToggleFavorite={() => handleToggleFavorite(selectedProduct.id)}
               allProducts={allProducts}
               onSelectProduct={handleSelectProduct}
+              currentLanguage={currentLanguage}
             />
           )}
         </div>
@@ -1021,6 +1029,7 @@ export default function App() {
             onMicClick={handleMicClick}
             isListening={isListeningMic || currentScreen === 'listening'}
             listCount={totalListCount}
+            currentLanguage={currentLanguage}
           />
         )}
       </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Product } from '../../types';
 import { Search, Mic, Plus, Check, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { t, getTranslatedProductName, getTranslatedPackageSize } from '../../utils/i18n';
 
 interface VoiceSearchResultsScreenProps {
   query: string;
@@ -10,6 +11,7 @@ interface VoiceSearchResultsScreenProps {
   onStartVoiceSearch: () => void;
   onSearchChange: (newQuery: string) => void;
   addedProductIds?: string[];
+  currentLanguage?: string;
 }
 
 export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> = ({
@@ -20,9 +22,21 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
   onStartVoiceSearch,
   onSearchChange,
   addedProductIds = [],
+  currentLanguage = 'English',
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
-  const filters = ['All', 'Dairy', 'Produce', 'Bakery', 'Organic', 'Under $5', 'Under $10', 'Samsung', 'Apple', 'Pepsi', "Lay's"];
+  
+  const filterTranslationKeyMap: Record<string, keyof typeof import('../../utils/i18n').TRANSLATIONS.en> = {
+    All: 'filterAll',
+    Dairy: 'filterDairy',
+    Produce: 'filterProduce',
+    Bakery: 'filterBakery',
+    Organic: 'filterOrganic',
+    'Under $5': 'filterUnder5',
+    'Under $10': 'filterUnder10',
+  };
+
+  const rawFilters = ['All', 'Dairy', 'Produce', 'Bakery', 'Organic', 'Under $5', 'Under $10', 'Samsung', 'Apple', 'Pepsi', "Lay's"];
 
   const filteredResults = results.filter((product) => {
     if (selectedFilter === 'All') return true;
@@ -51,7 +65,7 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
             type="text"
             value={query}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search groceries..."
+            placeholder={t('searchGroceriesPlaceholder', currentLanguage)}
             className="w-full bg-transparent text-[14px] text-[#f3f4f8] placeholder-[#717694] focus:outline-none"
           />
         </div>
@@ -73,16 +87,16 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
           </div>
           <div className="min-w-0">
             <p className="text-[11px] font-bold text-[#8a90b0] uppercase tracking-wider">
-              Voice Search Query
+              {t('voiceSearchQuery', currentLanguage)}
             </p>
             <p className="text-[13.5px] font-bold text-[#f3f4f8] truncate">
-              &ldquo;{query || 'Type or speak to search'}&rdquo;
+              &ldquo;{query || t('typeOrSpeakToSearch', currentLanguage)}&rdquo;
             </p>
           </div>
         </div>
 
         <span className="text-[11.5px] font-extrabold bg-[#7059fd]/20 text-[#a899ff] px-2 py-0.5 rounded-full shrink-0 border border-[#7059fd]/35">
-          {filteredResults.length} found
+          {filteredResults.length} {t('found', currentLanguage)}
         </span>
       </section>
 
@@ -91,19 +105,23 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
         <div className="flex items-center gap-1 text-[#8a90b0] text-[12px] font-semibold pl-1 pr-1 shrink-0">
           <SlidersHorizontal className="w-3.5 h-3.5" />
         </div>
-        {filters.map((filter) => (
-          <button
-            key={filter}
-            onClick={() => setSelectedFilter(filter)}
-            className={`px-3 py-1.5 rounded-full text-[12px] font-semibold shrink-0 transition-all cursor-pointer ${
-              selectedFilter === filter
-                ? 'bg-[#7059fd] text-white shadow-[0_2px_10px_rgba(112,89,253,0.35)]'
-                : 'bg-[#151726]/90 text-[#b0b4c8] hover:bg-[#1f2237] border border-[#272b47]'
-            }`}
-          >
-            {filter}
-          </button>
-        ))}
+        {rawFilters.map((filter) => {
+          const translationKey = filterTranslationKeyMap[filter];
+          const displayLabel = translationKey ? t(translationKey, currentLanguage) : filter;
+          return (
+            <button
+              key={filter}
+              onClick={() => setSelectedFilter(filter)}
+              className={`px-3 py-1.5 rounded-full text-[12px] font-semibold shrink-0 transition-all cursor-pointer ${
+                selectedFilter === filter
+                  ? 'bg-[#7059fd] text-white shadow-[0_2px_10px_rgba(112,89,253,0.35)]'
+                  : 'bg-[#151726]/90 text-[#b0b4c8] hover:bg-[#1f2237] border border-[#272b47]'
+              }`}
+            >
+              {displayLabel}
+            </button>
+          );
+        })}
       </section>
 
       {/* Results Grid - 2 columns */}
@@ -111,17 +129,17 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
         <section className="flex flex-col items-center justify-center text-center py-12 px-4 dark-glass-surface rounded-3xl border border-[#272b47]">
           <Search className="w-10 h-10 text-[#6d728e] mb-2 stroke-[1.5]" />
           <h3 className="text-[16px] font-bold text-[#f3f4f8]">
-            No products found
+            {t('noProductsFound', currentLanguage)}
           </h3>
           <p className="text-[12.5px] text-[#9da3c2] mt-1 max-w-[220px]">
-            Try searching for milk, bread, bananas, eggs, or say another prompt.
+            {t('noProductsFoundSubtitle', currentLanguage)}
           </p>
           <button
             onClick={onStartVoiceSearch}
             className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl veya-voice-gradient text-white text-[13px] font-bold shadow-md cursor-pointer"
           >
             <Mic className="w-4 h-4" />
-            <span>Try Voice Search</span>
+            <span>{t('tryVoiceSearch', currentLanguage)}</span>
           </button>
         </section>
       ) : (
@@ -158,10 +176,10 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
                     ${product.price.toFixed(2)}
                   </p>
                   <h4 className="text-[13px] font-bold text-[#f3f4f8] leading-[17px] truncate mt-0.5">
-                    {product.name}
+                    {getTranslatedProductName(product, currentLanguage)}
                   </h4>
                   <p className="text-[11px] text-[#9da3c2] truncate">
-                    {product.packageSize}
+                    {getTranslatedPackageSize(product, currentLanguage)}
                   </p>
                 </div>
 
@@ -196,10 +214,10 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
           <Sparkles className="w-4 h-4 text-[#06b6d4]" />
           <div>
             <p className="text-[12.5px] font-bold text-[#f3f4f8]">
-              Looking for something else?
+              {t('lookingForSomethingElse', currentLanguage)}
             </p>
             <p className="text-[11.5px] text-[#9da3c2]">
-              Just speak to Veya anytime.
+              {t('speakAnytime', currentLanguage)}
             </p>
           </div>
         </div>
@@ -208,7 +226,7 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
           onClick={onStartVoiceSearch}
           className="px-3 py-1.5 rounded-xl bg-[#7059fd] hover:bg-[#5d44fa] text-white text-[12px] font-bold shadow-sm active:scale-95 transition-all cursor-pointer"
         >
-          Speak
+          {t('speak', currentLanguage)}
         </button>
       </section>
     </main>
