@@ -17,10 +17,10 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartVoice }) =>
         </div>
         <div className="flex-1 min-w-0">
           <h2 className="text-[17px] font-extrabold text-[#f3f4f8] tracking-tight">
-            Sarik Srivastava
+            Alex Morgan
           </h2>
           <p className="text-[12.5px] text-[#9da3c2]">
-            sariksrivastava@gmail.com
+            alex.morgan@example.com
           </p>
           <span className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-[#a899ff] bg-[#7059fd]/20 border border-[#7059fd]/35 px-2 py-0.5 rounded-full">
             <Sparkles className="w-3 h-3 text-[#06b6d4]" />
