@@ -31,10 +31,30 @@ export const CATEGORY_TRANSLATIONS: Record<string, { en: string; hi: string }> =
 
 export const PRODUCT_NAME_TRANSLATIONS: Record<string, { name: string; packageSize?: string }> = {
   'whole-milk': { name: 'दूध (Whole Milk)', packageSize: '1 गैलन' },
-  'organic-bananas': { name: 'ताज़े जैविक केले (Organic Bananas)', packageSize: '1 बंच (लगभग 6 केले)' },
-  'sourdough-bread': { name: 'सॉर्डो ब्रेड (Sourdough Bread)', packageSize: '1 पाव' },
+  'cheddar-cheese': { name: 'चेडर चीज़ (Cheddar Cheese)', packageSize: '200 ग्राम ब्लॉक' },
   'greek-yogurt': { name: 'लो-फैट ग्रीक दही (Greek Yogurt)', packageSize: '32 औंस टब' },
+  'fuji-apples': { name: 'जैविक फ़ूजी सेब (Organic Fuji Apples)', packageSize: '1 पाउंड बैग' },
+  'gala-apples': { name: 'जैविक गाला सेब (Organic Gala Apples)', packageSize: '1 पाउंड बैग' },
+  'red-apples': { name: 'जैविक रेड डिलीशियस सेब (Organic Red Delicious Apples)', packageSize: '1 पाउंड बैग' },
+  'apples-bag': { name: 'क्रिस्प ऑर्चर्ड सेब (Crisp Orchard Apples)', packageSize: '5 सेब का बैग' },
+  'bananas': { name: 'ताज़े जैविक केले (Organic Bananas)', packageSize: '1 बंच (लगभग 6 केले)' },
+  'organic-bananas': { name: 'ताज़े जैविक केले (Organic Bananas)', packageSize: '1 बंच (लगभग 6 केले)' },
+  'oranges': { name: 'नेवल संतरे (Navel Oranges)', packageSize: '6 संतरे का बैग' },
+  'mangoes': { name: 'अल्फांसो आम (Alphonso Mangoes)', packageSize: '3 आम का पैक' },
+  'grapes-red': { name: 'रेड सीडलेस अंगूर (Red Grapes)', packageSize: '500 ग्राम' },
+  'watermelon': { name: 'सीडलेस तरबूज (Seedless Watermelon)', packageSize: '4-5 किग्रा' },
+  'fresh-avocados': { name: 'हास् एवकाडो (Hass Avocados)', packageSize: '3 का पैक' },
+  'tomatoes': { name: 'वाइन-राइपंड टमाटर (Vine Tomatoes)', packageSize: '500 ग्राम' },
   'organic-tomatoes': { name: 'ताज़े जैविक टमाटर (Organic Tomatoes)', packageSize: '1 किग्रा' },
+  'potatoes': { name: 'रसेट आलू (Russet Potatoes)', packageSize: '2 किग्रा बैग' },
+  'onions': { name: 'ब्राउन प्याज (Brown Onions)', packageSize: '1 किग्रा बैग' },
+  'carrots': { name: 'जैविक गाजर (Organic Carrots)', packageSize: '1 पाउंड बैग' },
+  'spinach': { name: 'पालक के पत्ते (Baby Spinach)', packageSize: '150 ग्राम बैग' },
+  'broccoli': { name: 'ताज़ा ब्रोकोली (Fresh Broccoli)', packageSize: '1 पीस' },
+  'artisan-sourdough': { name: 'आर्टिसन सॉर्डो ब्रेड (Sourdough Loaf)', packageSize: '500 ग्राम पाव' },
+  'sourdough-bread': { name: 'सॉर्डो ब्रेड (Sourdough Bread)', packageSize: '1 पाव' },
+  'white-bread': { name: 'क्लासिक व्हाइट ब्रेड (White Bread)', packageSize: '600 ग्राम पाव' },
+  'burger-buns': { name: 'तिल वाले बर्गर बन्स (Burger Buns)', packageSize: '6 का पैक' },
   'dark-chocolate': { name: 'डार्क चॉकलेट बार (Dark Chocolate Bar)', packageSize: '100 ग्राम' },
   'assam-tea': { name: 'असम ब्लैक टी (Assam Black Tea)', packageSize: '100 टी बैग्स' },
   'mineral-water': { name: 'मिनरल वाटर (Mineral Water 1L)', packageSize: '1 लीटर बोतल' },
@@ -47,6 +67,59 @@ export const PRODUCT_NAME_TRANSLATIONS: Record<string, { name: string; packageSi
   'sensodyne-toothpaste': { name: 'टूथपेस्ट (Sensodyne Toothpaste)', packageSize: '150 ग्राम' },
 };
 
+const TERM_REPLACEMENTS: [RegExp, string][] = [
+  [/Organic Red Delicious Apples/gi, 'जैविक रेड डिलीशियस सेब (Organic Red Delicious Apples)'],
+  [/Organic Fuji Apples/gi, 'जैविक फ़ूजी सेब (Organic Fuji Apples)'],
+  [/Organic Gala Apples/gi, 'जैविक गाला सेब (Organic Gala Apples)'],
+  [/Crisp Orchard Apples/gi, 'क्रिस्प ऑर्चर्ड सेब (Crisp Orchard Apples)'],
+  [/Fresh Organic Bananas/gi, 'ताज़े जैविक केले (Organic Bananas)'],
+  [/Ripe Hass Avocados/gi, 'पके हास एवकाडो (Hass Avocados)'],
+  [/Vine-Ripened Tomatoes/gi, 'वाइन-राइपंड टमाटर (Vine Tomatoes)'],
+  [/Russet Potatoes/gi, 'रसेट आलू (Russet Potatoes)'],
+  [/Brown Onions/gi, 'ब्राउन प्याज (Brown Onions)'],
+  [/Organic Carrots/gi, 'जैविक गाजर (Organic Carrots)'],
+  [/Baby Spinach Leaves/gi, 'पालक के पत्ते (Baby Spinach)'],
+  [/Fresh Broccoli/gi, 'ताज़ा ब्रोकोली (Fresh Broccoli)'],
+  [/Navel Oranges/gi, 'नेवल संतरे (Navel Oranges)'],
+  [/Alphonso Mangoes/gi, 'अल्फांसो आम (Alphonso Mangoes)'],
+  [/Red Seedless Grapes/gi, 'रेड सीडलेस अंगूर (Red Grapes)'],
+  [/Seedless Watermelon/gi, 'सीडलेस तरबूज (Seedless Watermelon)'],
+  [/\bOrganic\b/gi, 'जैविक'],
+  [/\bFresh\b/gi, 'ताज़ा'],
+  [/\bCrisp\b/gi, 'क्रिस्प'],
+  [/\bOrchard\b/gi, 'ऑर्चर्ड'],
+  [/\bApples\b/gi, 'सेब'],
+  [/\bApple\b/gi, 'सेब'],
+  [/\bBananas\b/gi, 'केले'],
+  [/\bBanana\b/gi, 'केला'],
+  [/\bTomatoes\b/gi, 'टमाटर'],
+  [/\bTomato\b/gi, 'टमाटर'],
+  [/\bPotatoes\b/gi, 'आलू'],
+  [/\bOnions\b/gi, 'प्याज'],
+  [/\bCarrots\b/gi, 'गाजर'],
+  [/\bSpinach\b/gi, 'पालक'],
+  [/\bMangoes\b/gi, 'आम'],
+  [/\bOranges\b/gi, 'संतरे'],
+  [/\bGrapes\b/gi, 'अंगूर'],
+  [/\bWatermelon\b/gi, 'तरबूज'],
+  [/\bAvocados\b/gi, 'एवकाडो'],
+  [/\bMilk\b/gi, 'दूध'],
+  [/\bBread\b/gi, 'ब्रेड'],
+  [/\bCheese\b/gi, 'चीज़'],
+  [/\bYogurt\b/gi, 'दही'],
+  [/\bButter\b/gi, 'मक्खन'],
+  [/\bEggs\b/gi, 'अंडे'],
+  [/\bJuice\b/gi, 'जूस'],
+  [/\bWater\b/gi, 'पानी'],
+  [/\bTea\b/gi, 'चाय'],
+  [/\bCoffee\b/gi, 'कॉफी'],
+  [/\bChocolate\b/gi, 'चॉकलेट'],
+  [/\bIce Cream\b/gi, 'आइसक्रीम'],
+  [/\bChips\b/gi, 'चिप्स'],
+  [/\bSocks\b/gi, 'जुराब'],
+  [/\bToothpaste\b/gi, 'टूथपेस्ट'],
+];
+
 export const getTranslatedCategory = (category: string, lang?: string): string => {
   if (!isHindi(lang)) return category;
   return CATEGORY_TRANSLATIONS[category]?.hi || category;
@@ -54,12 +127,29 @@ export const getTranslatedCategory = (category: string, lang?: string): string =
 
 export const getTranslatedProductName = (product: Product, lang?: string): string => {
   if (!isHindi(lang)) return product.name;
-  return PRODUCT_NAME_TRANSLATIONS[product.id]?.name || product.name;
+  if (PRODUCT_NAME_TRANSLATIONS[product.id]?.name) {
+    return PRODUCT_NAME_TRANSLATIONS[product.id].name;
+  }
+  let translated = product.name;
+  for (const [pattern, replacement] of TERM_REPLACEMENTS) {
+    translated = translated.replace(pattern, replacement);
+  }
+  return translated;
 };
 
 export const getTranslatedPackageSize = (product: Product, lang?: string): string => {
   if (!isHindi(lang)) return product.packageSize;
-  return PRODUCT_NAME_TRANSLATIONS[product.id]?.packageSize || product.packageSize;
+  if (PRODUCT_NAME_TRANSLATIONS[product.id]?.packageSize) {
+    return PRODUCT_NAME_TRANSLATIONS[product.id].packageSize;
+  }
+  let pkg = product.packageSize;
+  pkg = pkg
+    .replace(/\b1 lb bag\b/gi, '1 पाउंड बैग')
+    .replace(/\bBag of 5\b/gi, '5 का बैग')
+    .replace(/\bBag of 6\b/gi, '6 का बैग')
+    .replace(/\bPack of (\d+)\b/gi, '$1 का पैक')
+    .replace(/\bBunch \(approx (\d+)\)\b/gi, '1 बंच (लगभग $1)');
+  return pkg;
 };
 
 export const TRANSLATIONS = {
