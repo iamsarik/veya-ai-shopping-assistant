@@ -178,248 +178,248 @@ export default function App() {
     }
   };
 
-// Helper functions for Voice Command Processing
-const extractQuantityAndUnit = (segment: string): { quantity: number; unit?: string } => {
-  const lower = segment.toLowerCase();
+  // Helper functions for Voice Command Processing
+  const extractQuantityAndUnit = (segment: string): { quantity: number; unit?: string } => {
+    const lower = segment.toLowerCase();
 
-  const wordToNum: Record<string, number> = {
-    one: 1,
-    two: 2,
-    three: 3,
-    four: 4,
-    five: 5,
-    six: 6,
-    seven: 7,
-    eight: 8,
-    nine: 9,
-    ten: 10,
-    eleven: 11,
-    twelve: 12,
-    thirteen: 13,
-    fourteen: 14,
-    fifteen: 15,
-    sixteen: 16,
-    seventeen: 17,
-    eighteen: 18,
-    nineteen: 19,
-    twenty: 20,
-  };
+    const wordToNum: Record<string, number> = {
+      one: 1,
+      two: 2,
+      three: 3,
+      four: 4,
+      five: 5,
+      six: 6,
+      seven: 7,
+      eight: 8,
+      nine: 9,
+      ten: 10,
+      eleven: 11,
+      twelve: 12,
+      thirteen: 13,
+      fourteen: 14,
+      fifteen: 15,
+      sixteen: 16,
+      seventeen: 17,
+      eighteen: 18,
+      nineteen: 19,
+      twenty: 20,
+    };
 
-  const knownUnits = [
-    'gallons', 'gallon',
-    'bottles', 'bottle',
-    'loaves', 'loaf',
-    'packets', 'packet', 'packs', 'pack',
-    'boxes', 'box',
-    'pieces', 'piece',
-    'pairs', 'pair',
-    'sets', 'set',
-    'units', 'unit',
-    'kg', 'lbs', 'lb', 'oz', 'liters', 'liter'
-  ];
+    const knownUnits = [
+      'gallons', 'gallon',
+      'bottles', 'bottle',
+      'loaves', 'loaf',
+      'packets', 'packet', 'packs', 'pack',
+      'boxes', 'box',
+      'pieces', 'piece',
+      'pairs', 'pair',
+      'sets', 'set',
+      'units', 'unit',
+      'kg', 'lbs', 'lb', 'oz', 'liters', 'liter'
+    ];
 
-  let quantity = 1;
-  let detectedUnit: string | undefined = undefined;
+    let quantity = 1;
+    let detectedUnit: string | undefined = undefined;
 
-  // 1. Check for digits first e.g. "10 apples", "2 gallons of milk"
-  const digitMatch = lower.match(/\b(\d+)\b/);
-  if (digitMatch) {
-    const val = parseInt(digitMatch[1], 10);
-    if (!isNaN(val) && val > 0 && val < 1000) {
-      quantity = val;
+    // 1. Check for digits first e.g. "10 apples", "2 gallons of milk"
+    const digitMatch = lower.match(/\b(\d+)\b/);
+    if (digitMatch) {
+      const val = parseInt(digitMatch[1], 10);
+      if (!isNaN(val) && val > 0 && val < 1000) {
+        quantity = val;
+      }
+    } else {
+      // 2. Check for written numbers e.g. "two gallons of milk", "twelve bananas"
+      const words = lower.split(/\s+/);
+      for (const word of words) {
+        const clean = word.replace(/[^a-z]/g, '');
+        if (wordToNum[clean] !== undefined) {
+          quantity = wordToNum[clean];
+          break;
+        }
+      }
     }
-  } else {
-    // 2. Check for written numbers e.g. "two gallons of milk", "twelve bananas"
+
+    // Check for unit
     const words = lower.split(/\s+/);
-    for (const word of words) {
-      const clean = word.replace(/[^a-z]/g, '');
-      if (wordToNum[clean] !== undefined) {
-        quantity = wordToNum[clean];
+    for (const u of knownUnits) {
+      if (words.includes(u)) {
+        detectedUnit = u;
         break;
       }
     }
-  }
 
-  // Check for unit
-  const words = lower.split(/\s+/);
-  for (const u of knownUnits) {
-    if (words.includes(u)) {
-      detectedUnit = u;
-      break;
+    return { quantity, unit: detectedUnit };
+  };
+
+  const extractQuantity = (command: string): number | null => {
+    return extractQuantityAndUnit(command).quantity;
+  };
+
+  const normalizeText = (text: string): string => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const toSingular = (word: string): string => {
+    const w = word.toLowerCase();
+    if (w.endsWith('ies') && w.length > 4) return w.slice(0, -3) + 'y';
+    if (w.endsWith('glasses')) return 'glass';
+    if (w.endsWith('dresses')) return 'dress';
+    if (w.endsWith('es') && w.length > 4 && (w.endsWith('shes') || w.endsWith('ches') || w.endsWith('boxes'))) {
+      return w.slice(0, -2);
     }
-  }
-
-  return { quantity, unit: detectedUnit };
-};
-
-const extractQuantity = (command: string): number | null => {
-  return extractQuantityAndUnit(command).quantity;
-};
-
-const normalizeText = (text: string): string => {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
-
-const toSingular = (word: string): string => {
-  const w = word.toLowerCase();
-  if (w.endsWith('ies') && w.length > 4) return w.slice(0, -3) + 'y';
-  if (w.endsWith('glasses')) return 'glass';
-  if (w.endsWith('dresses')) return 'dress';
-  if (w.endsWith('es') && w.length > 4 && (w.endsWith('shes') || w.endsWith('ches') || w.endsWith('boxes'))) {
-    return w.slice(0, -2);
-  }
-  if (w.endsWith('s') && !w.endsWith('ss') && !w.endsWith('is') && w.length > 3) {
-    return w.slice(0, -1);
-  }
-  return w;
-};
-
-const VOICE_STOP_WORDS = new Set([
-  'add', 'buy', 'get', 'please', 'put', 'need', 'want',
-  'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
-  'a', 'an', 'some', 'gallons', 'gallon', 'bottle', 'bottles', 'pack', 'packs', 'loaves', 'loaf',
-  'box', 'boxes', 'piece', 'pieces', 'set', 'sets', 'unit', 'units', 'pair', 'pairs',
-  'of', 'to', 'the', 'my', 'list', 'shopping', 'can', 'cans', 'item', 'items', 'and', 'with', 'plus',
-  ...Array.from({ length: 100 }, (_, i) => String(i + 1))
-]);
-
-const isTokenMatch = (qTok: string, pTok: string): boolean => {
-  const qSingular = toSingular(qTok);
-  const pSingular = toSingular(pTok);
-  return qSingular === pSingular;
-};
-
-const MIN_MATCH_CONFIDENCE = 25;
-
-const findBestProductMatch = (command: string, products: Product[]): Product | null => {
-  const normCmd = normalizeText(command);
-  const cmdWords = normCmd.split(' ').map(toSingular);
-  const queryTokens = cmdWords.filter(
-    (w) => w.length > 0 && !VOICE_STOP_WORDS.has(w) && !/^\d+$/.test(w)
-  );
-
-  const effectiveTokens = queryTokens.length > 0 ? queryTokens : cmdWords.filter((w) => w.length > 0 && !/^\d+$/.test(w));
-
-  let bestProduct: Product | null = null;
-  let maxScore = -1;
-
-  for (const p of products) {
-    const normName = normalizeText(p.name);
-    const pNameTokens = normName.split(' ').map(toSingular);
-    const tagTokens = (p.tags ?? []).flatMap((t) => normalizeText(t).split(' ').map(toSingular));
-    const subcatTokens = normalizeText(p.subcategory ?? '').split(' ').map(toSingular);
-    const brandTokens = normalizeText(p.brand ?? '').split(' ').map(toSingular);
-
-    const allProductTokens = Array.from(new Set([...pNameTokens, ...tagTokens, ...subcatTokens, ...brandTokens]));
-
-    let score = 0;
-    const joinedQuery = effectiveTokens.join(' ');
-
-    if (joinedQuery && normName.includes(joinedQuery)) {
-      score += 100;
+    if (w.endsWith('s') && !w.endsWith('ss') && !w.endsWith('is') && w.length > 3) {
+      return w.slice(0, -1);
     }
+    return w;
+  };
 
-    let matchedCount = 0;
-    for (const qTok of effectiveTokens) {
-      if (allProductTokens.some((pt) => isTokenMatch(qTok, pt))) {
-        matchedCount++;
+  const VOICE_STOP_WORDS = new Set([
+    'add', 'buy', 'get', 'please', 'put', 'need', 'want',
+    'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+    'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty',
+    'a', 'an', 'some', 'gallons', 'gallon', 'bottle', 'bottles', 'pack', 'packs', 'loaves', 'loaf',
+    'box', 'boxes', 'piece', 'pieces', 'set', 'sets', 'unit', 'units', 'pair', 'pairs',
+    'of', 'to', 'the', 'my', 'list', 'shopping', 'can', 'cans', 'item', 'items', 'and', 'with', 'plus',
+    ...Array.from({ length: 100 }, (_, i) => String(i + 1))
+  ]);
+
+  const isTokenMatch = (qTok: string, pTok: string): boolean => {
+    const qSingular = toSingular(qTok);
+    const pSingular = toSingular(pTok);
+    return qSingular === pSingular;
+  };
+
+  const MIN_MATCH_CONFIDENCE = 25;
+
+  const findBestProductMatch = (command: string, products: Product[]): Product | null => {
+    const normCmd = normalizeText(command);
+    const cmdWords = normCmd.split(' ').map(toSingular);
+    const queryTokens = cmdWords.filter(
+      (w) => w.length > 0 && !VOICE_STOP_WORDS.has(w) && !/^\d+$/.test(w)
+    );
+
+    const effectiveTokens = queryTokens.length > 0 ? queryTokens : cmdWords.filter((w) => w.length > 0 && !/^\d+$/.test(w));
+
+    let bestProduct: Product | null = null;
+    let maxScore = -1;
+
+    for (const p of products) {
+      const normName = normalizeText(p.name);
+      const pNameTokens = normName.split(' ').map(toSingular);
+      const tagTokens = (p.tags ?? []).flatMap((t) => normalizeText(t).split(' ').map(toSingular));
+      const subcatTokens = normalizeText(p.subcategory ?? '').split(' ').map(toSingular);
+      const brandTokens = normalizeText(p.brand ?? '').split(' ').map(toSingular);
+
+      const allProductTokens = Array.from(new Set([...pNameTokens, ...tagTokens, ...subcatTokens, ...brandTokens]));
+
+      let score = 0;
+      const joinedQuery = effectiveTokens.join(' ');
+
+      if (joinedQuery && normName.includes(joinedQuery)) {
+        score += 100;
+      }
+
+      let matchedCount = 0;
+      for (const qTok of effectiveTokens) {
+        if (allProductTokens.some((pt) => isTokenMatch(qTok, pt))) {
+          matchedCount++;
+        }
+      }
+
+      if (effectiveTokens.length > 0) {
+        const matchRatio = matchedCount / effectiveTokens.length;
+        score += matchRatio * 50;
+      }
+
+      const pIdNormalized = p.id.toLowerCase().replace(/-/g, ' ');
+      if (pIdNormalized.length > 3 && normCmd.includes(pIdNormalized)) {
+        score += 150;
+      }
+
+      if (score > maxScore && matchedCount > 0) {
+        maxScore = score;
+        bestProduct = p;
       }
     }
 
-    if (effectiveTokens.length > 0) {
-      const matchRatio = matchedCount / effectiveTokens.length;
-      score += matchRatio * 50;
+    if (maxScore < MIN_MATCH_CONFIDENCE) {
+      return null;
     }
 
-    const pIdNormalized = p.id.toLowerCase().replace(/-/g, ' ');
-    if (pIdNormalized.length > 3 && normCmd.includes(pIdNormalized)) {
-      score += 150;
+    return bestProduct;
+  };
+
+  const splitVoiceCommand = (command: string): string[] => {
+    let cleaned = command.toLowerCase().trim();
+
+    // Strip initial action prefixes
+    cleaned = cleaned.replace(/^(?:i\s+need|please\s+add|can\s+you\s+add|add|buy|get|put)\s+/i, '').trim();
+
+    // Split by " and ", ", and ", ", ", " plus ", " & "
+    const rawSegments = cleaned.split(/\s*(?:,\s*and\s+|\s+and\s+|,\s*|\s+&+\s+|\s+plus\s+)\s*/i);
+
+    const segments = rawSegments
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    return segments.length > 0 ? segments : [command];
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // resolveProductFromHint
+  // Maps a Gemini-produced product hint string to a Product in the catalog.
+  // This is NOT the old fuzzy parser — it is a safe, deterministic resolver
+  // intended for clean, catalog-anchored hint strings returned by Gemini.
+  // ─────────────────────────────────────────────────────────────────────────────
+  const resolveProductFromHint = (hint: string, products: Product[]): Product | null => {
+    if (!hint || hint.trim().length < 2) return null;
+
+    const norm = (s: string) =>
+      s.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    const normHint = norm(hint);
+    if (normHint.length === 0) return null;
+
+    // 1. Exact normalized name match
+    const exact = products.find(p => norm(p.name) === normHint);
+    if (exact) return exact;
+
+    // 2. Exact product ID slug match
+    const idMatch = products.find(p => p.id.replace(/-/g, ' ') === normHint);
+    if (idMatch) return idMatch;
+
+    // 3. Product name contains the hint (e.g. hint="white bread", name="Classic White Bread")
+    const forwardContains = products.find(p => norm(p.name).includes(normHint));
+    if (forwardContains) return forwardContains;
+
+    // 4. Hint contains the product name (e.g. hint="classic white bread loaf", name="Classic White Bread")
+    const reverseContains = products.find(p => normHint.includes(norm(p.name)));
+    if (reverseContains) return reverseContains;
+
+    // 5. Token overlap — requires >50% of product name tokens to appear in the hint.
+    //    Safe threshold since Gemini is grounded in the real catalog.
+    const hintTokens = new Set(normHint.split(' ').filter(t => t.length > 2));
+    let bestProduct: Product | null = null;
+    let bestScore = 0;
+
+    for (const p of products) {
+      const nameTokens = norm(p.name).split(' ').filter(t => t.length > 2);
+      if (nameTokens.length === 0) continue;
+      const matched = nameTokens.filter(t => hintTokens.has(t)).length;
+      const score = matched / nameTokens.length;
+      if (score > 0.5 && score > bestScore) {
+        bestScore = score;
+        bestProduct = p;
+      }
     }
 
-    if (score > maxScore && matchedCount > 0) {
-      maxScore = score;
-      bestProduct = p;
-    }
-  }
-
-  if (maxScore < MIN_MATCH_CONFIDENCE) {
-    return null;
-  }
-
-  return bestProduct;
-};
-
-const splitVoiceCommand = (command: string): string[] => {
-  let cleaned = command.toLowerCase().trim();
-
-  // Strip initial action prefixes
-  cleaned = cleaned.replace(/^(?:i\s+need|please\s+add|can\s+you\s+add|add|buy|get|put)\s+/i, '').trim();
-
-  // Split by " and ", ", and ", ", ", " plus ", " & "
-  const rawSegments = cleaned.split(/\s*(?:,\s*and\s+|\s+and\s+|,\s*|\s+&+\s+|\s+plus\s+)\s*/i);
-
-  const segments = rawSegments
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-
-  return segments.length > 0 ? segments : [command];
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// resolveProductFromHint
-// Maps a Gemini-produced product hint string to a Product in the catalog.
-// This is NOT the old fuzzy parser — it is a safe, deterministic resolver
-// intended for clean, catalog-anchored hint strings returned by Gemini.
-// ─────────────────────────────────────────────────────────────────────────────
-const resolveProductFromHint = (hint: string, products: Product[]): Product | null => {
-  if (!hint || hint.trim().length < 2) return null;
-
-  const norm = (s: string) =>
-    s.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
-
-  const normHint = norm(hint);
-  if (normHint.length === 0) return null;
-
-  // 1. Exact normalized name match
-  const exact = products.find(p => norm(p.name) === normHint);
-  if (exact) return exact;
-
-  // 2. Exact product ID slug match
-  const idMatch = products.find(p => p.id.replace(/-/g, ' ') === normHint);
-  if (idMatch) return idMatch;
-
-  // 3. Product name contains the hint (e.g. hint="white bread", name="Classic White Bread")
-  const forwardContains = products.find(p => norm(p.name).includes(normHint));
-  if (forwardContains) return forwardContains;
-
-  // 4. Hint contains the product name (e.g. hint="classic white bread loaf", name="Classic White Bread")
-  const reverseContains = products.find(p => normHint.includes(norm(p.name)));
-  if (reverseContains) return reverseContains;
-
-  // 5. Token overlap — requires >50% of product name tokens to appear in the hint.
-  //    Safe threshold since Gemini is grounded in the real catalog.
-  const hintTokens = new Set(normHint.split(' ').filter(t => t.length > 2));
-  let bestProduct: Product | null = null;
-  let bestScore = 0;
-
-  for (const p of products) {
-    const nameTokens = norm(p.name).split(' ').filter(t => t.length > 2);
-    if (nameTokens.length === 0) continue;
-    const matched = nameTokens.filter(t => hintTokens.has(t)).length;
-    const score = matched / nameTokens.length;
-    if (score > 0.5 && score > bestScore) {
-      bestScore = score;
-      bestProduct = p;
-    }
-  }
-
-  return bestProduct;
-};
+    return bestProduct;
+  };
 
   // ─────────────────────────────────────────────────────────────────────────────
   // handleProcessVoiceCommand — Phase 3 Gemini NLP pipeline
@@ -499,7 +499,7 @@ const resolveProductFromHint = (hint: string, products: Product[]): Product | nu
           const recognizedItems: VoiceRecognizedItem[] = parsed.items.map((item, i) => ({
             id: `rec-item-${i}-${Date.now()}`,
             rawText: item.rawText || command,
-            product: resolveProductFromHint(item.productHint, allProducts),
+            product: item.product,
             quantity: item.quantity,
             unit: item.unit,
           }));
@@ -812,11 +812,10 @@ const resolveProductFromHint = (hint: string, products: Product[]): Product | nu
 
       {/* Main App Container */}
       <div
-        className={`w-full bg-[#0c0d16] flex flex-col relative transition-all duration-300 ${
-          isMobileFrame
+        className={`w-full bg-[#0c0d16] flex flex-col relative transition-all duration-300 ${isMobileFrame
             ? 'max-w-[390px] min-h-[844px] my-3 sm:my-6 rounded-[38px] shadow-[0_25px_60px_rgba(0,0,0,0.85)] border-[4px] border-[#22253d] overflow-hidden'
             : 'max-w-[540px] min-h-screen shadow-2xl border-x border-[#1e2136]'
-        }`}
+          }`}
       >
         {/* iOS Mobile Status Bar in 390px Frame */}
         {isMobileFrame && (

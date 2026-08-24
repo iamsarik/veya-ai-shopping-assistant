@@ -94,7 +94,8 @@ export interface ParsedVoiceIntent {
   intent: 'ADD' | 'REMOVE' | 'SEARCH' | 'SHOW_LIST' | 'UNKNOWN';
   items: Array<{
     rawText: string;
-    productHint: string; // Closest product name from catalog (or user's raw words if not found)
+    productHint: string;
+    product: Product | null;
     quantity: number;
     unit?: string;
   }>;

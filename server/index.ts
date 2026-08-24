@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { parseVoiceCommand } from './gemini';
+import { resolveProduct } from './catalogResolver';
 
 dotenv.config();
 
@@ -25,7 +26,16 @@ app.post('/api/parse-voice-command', async (req, res) => {
 
   try {
     const result = await parseVoiceCommand(transcript.trim());
-    res.json(result);
+
+    const resolvedItems = result.items.map((item) => ({
+      ...item,
+      product: resolveProduct(item.productHint),
+    }));
+
+    res.json({
+      ...result,
+      items: resolvedItems,
+    });
   } catch (err: any) {
     console.error('[Veya NLP] Error parsing voice command:', err?.message ?? err);
     res.status(500).json({
