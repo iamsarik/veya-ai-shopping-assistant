@@ -88,3 +88,16 @@ export interface VoiceRecognizedItem {
   quantity: number;
   unit?: string;
 }
+
+// Structured intent returned by the Gemini NLP backend (/api/parse-voice-command)
+export interface ParsedVoiceIntent {
+  intent: 'ADD' | 'REMOVE' | 'SEARCH' | 'SHOW_LIST' | 'UNKNOWN';
+  items: Array<{
+    rawText: string;
+    productHint: string; // Closest product name from catalog (or user's raw words if not found)
+    quantity: number;
+    unit?: string;
+  }>;
+  searchQuery?: string;    // Populated for SEARCH intent
+  removeTarget?: string;   // Populated for REMOVE intent
+}

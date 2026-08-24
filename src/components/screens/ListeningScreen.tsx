@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Mic, Sparkles, Volume2 } from 'lucide-react';
+import { Mic, Sparkles, Volume2, AlertTriangle, Loader2 } from 'lucide-react';
 
 interface ListeningScreenProps {
   transcript: string;
@@ -7,6 +7,12 @@ interface ListeningScreenProps {
   onStopListening: () => void;
   onSubmitCommand: (command: string) => void;
   onCancel: () => void;
+  /** True while the NLP backend is processing the command */
+  isProcessing?: boolean;
+  /** Error message to display when the backend/Gemini call fails */
+  errorMessage?: string | null;
+  /** Called when the user taps Try Again to dismiss the error */
+  onClearError?: () => void;
 }
 
 export const ListeningScreen: React.FC<ListeningScreenProps> = ({
@@ -15,6 +21,9 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
   onStopListening,
   onSubmitCommand,
   onCancel,
+  isProcessing = false,
+  errorMessage = null,
+  onClearError,
 }) => {
   const [dots, setDots] = useState('');
 
@@ -49,7 +58,13 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
           <span>Veya Voice Assistant</span>
         </div>
         <h2 className="text-[22px] font-extrabold text-[#f3f4f8] tracking-tight">
-          {isListening ? `Listening${dots}` : 'Processing audio...'}
+          {errorMessage
+            ? 'Command Failed'
+            : isProcessing
+            ? 'Analyzing command…'
+            : isListening
+            ? `Listening${dots}`
+            : 'Voice Assistant'}
         </h2>
         <p className="text-[13px] text-[#9da3c2] mt-1 max-w-[260px]">
           Speak naturally to add groceries, search products, or manage your list.
@@ -80,7 +95,7 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
               key={i}
               className="w-1.5 rounded-full bg-gradient-to-t from-[#7059fd] to-[#06b6d4] transition-all duration-150 animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.4)]"
               style={{
-                height: `${isListening ? h : 4}px`,
+                height: `${isListening || isProcessing ? h : 4}px`,
                 animationDelay: `${i * 0.15}s`,
               }}
             ></div>
@@ -131,6 +146,26 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
           </div>
         </div>
 
+        {/* Error Card — shown when the NLP backend/Gemini call fails */}
+        {errorMessage && (
+          <div className="w-full bg-[#24101a]/90 rounded-2xl border border-[#5c1f34] p-3.5 flex flex-col gap-2.5 shadow-md">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="w-4 h-4 text-[#ff4b72] shrink-0 mt-0.5" />
+              <p className="text-[12.5px] font-semibold text-[#ffb3c4] leading-relaxed">
+                {errorMessage}
+              </p>
+            </div>
+            {onClearError && (
+              <button
+                onClick={onClearError}
+                className="self-start px-3.5 py-1.5 rounded-full bg-[#7059fd] hover:bg-[#5d44fa] text-white text-[12px] font-bold transition-all active:scale-95 cursor-pointer"
+              >
+                Try Again
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Action Controls */}
         <div className="flex items-center gap-2.5 pt-2">
           <button
@@ -139,13 +174,19 @@ export const ListeningScreen: React.FC<ListeningScreenProps> = ({
           >
             Cancel
           </button>
-          {transcript && (
+          {transcript && !isProcessing && (
             <button
               onClick={() => onSubmitCommand(transcript)}
               className="flex-1 py-3 rounded-2xl bg-[#7059fd] hover:bg-[#5d44fa] text-white text-[13.5px] font-bold transition-all active:scale-95 cursor-pointer shadow-[0_4px_16px_rgba(112,89,253,0.35)]"
             >
               Confirm Command
             </button>
+          )}
+          {isProcessing && (
+            <div className="flex-1 py-3 rounded-2xl bg-[#1e1b3a] border border-[#7059fd]/40 text-[#a899ff] text-[13.5px] font-bold flex items-center justify-center gap-2 select-none">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Analyzing…</span>
+            </div>
           )}
         </div>
       </div>

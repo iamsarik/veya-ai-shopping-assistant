@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScreenType, NavTab, Product, ShoppingListItem, VoiceRecognizedItem } from './types';
+import { ScreenType, NavTab, Product, ShoppingListItem, VoiceRecognizedItem, ParsedVoiceIntent } from './types';
 import { INITIAL_PRODUCTS, INITIAL_SHOPPING_LIST } from './data/products';
 import { Header } from './components/Header';
 import { BottomNavBar } from './components/BottomNavBar';
@@ -46,6 +46,8 @@ export default function App() {
   const [voiceQuantity, setVoiceQuantity] = useState<number>(1);
   const [voiceRecognizedItems, setVoiceRecognizedItems] = useState<VoiceRecognizedItem[]>([]);
   const [isListeningMic, setIsListeningMic] = useState(false);
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
+  const [voiceCommandError, setVoiceCommandError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('organic apples under $5');
   const [favoriteProductIds, setFavoriteProductIds] = useState<string[]>(['whole-milk']);
   const speechRecognitionRef = useRef<any>(null);
@@ -90,6 +92,7 @@ export default function App() {
 
   const startVoiceRecording = () => {
     setVoiceTranscript('');
+    setVoiceCommandError(null);
     setIsListeningMic(true);
     if (speechRecognitionRef.current) {
       try {
@@ -139,6 +142,7 @@ export default function App() {
       navigateTo('listening');
     } else if (currentScreen === 'listening') {
       stopVoiceRecording();
+      setVoiceCommandError(null);
       navigateTo(previousScreen || 'home');
     } else if (currentScreen === 'categories') {
       navigateTo('home', 'home');
@@ -366,95 +370,168 @@ const splitVoiceCommand = (command: string): string[] => {
   return segments.length > 0 ? segments : [command];
 };
 
-  // Voice Command Processing
-  const handleProcessVoiceCommand = (command: string) => {
+// ─────────────────────────────────────────────────────────────────────────────
+// resolveProductFromHint
+// Maps a Gemini-produced product hint string to a Product in the catalog.
+// This is NOT the old fuzzy parser — it is a safe, deterministic resolver
+// intended for clean, catalog-anchored hint strings returned by Gemini.
+// ─────────────────────────────────────────────────────────────────────────────
+const resolveProductFromHint = (hint: string, products: Product[]): Product | null => {
+  if (!hint || hint.trim().length < 2) return null;
+
+  const norm = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  const normHint = norm(hint);
+  if (normHint.length === 0) return null;
+
+  // 1. Exact normalized name match
+  const exact = products.find(p => norm(p.name) === normHint);
+  if (exact) return exact;
+
+  // 2. Exact product ID slug match
+  const idMatch = products.find(p => p.id.replace(/-/g, ' ') === normHint);
+  if (idMatch) return idMatch;
+
+  // 3. Product name contains the hint (e.g. hint="white bread", name="Classic White Bread")
+  const forwardContains = products.find(p => norm(p.name).includes(normHint));
+  if (forwardContains) return forwardContains;
+
+  // 4. Hint contains the product name (e.g. hint="classic white bread loaf", name="Classic White Bread")
+  const reverseContains = products.find(p => normHint.includes(norm(p.name)));
+  if (reverseContains) return reverseContains;
+
+  // 5. Token overlap — requires >50% of product name tokens to appear in the hint.
+  //    Safe threshold since Gemini is grounded in the real catalog.
+  const hintTokens = new Set(normHint.split(' ').filter(t => t.length > 2));
+  let bestProduct: Product | null = null;
+  let bestScore = 0;
+
+  for (const p of products) {
+    const nameTokens = norm(p.name).split(' ').filter(t => t.length > 2);
+    if (nameTokens.length === 0) continue;
+    const matched = nameTokens.filter(t => hintTokens.has(t)).length;
+    const score = matched / nameTokens.length;
+    if (score > 0.5 && score > bestScore) {
+      bestScore = score;
+      bestProduct = p;
+    }
+  }
+
+  return bestProduct;
+};
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // handleProcessVoiceCommand — Phase 3 Gemini NLP pipeline
+  //
+  // Flow: transcript → POST /api/parse-voice-command → Gemini structured intent
+  //       → resolveProductFromHint (deterministic catalog lookup)
+  //       → VoiceRecognizedItem[] → existing ConfirmationScreen
+  //
+  // On failure: surfaces a clear error message in the ListeningScreen.
+  // NO silent fallback to the old local fuzzy parser.
+  // ─────────────────────────────────────────────────────────────────────────────
+  const handleProcessVoiceCommand = async (command: string): Promise<void> => {
     stopVoiceRecording();
     setVoiceTranscript(command);
-    const lower = command.toLowerCase();
+    setVoiceCommandError(null);
+    setIsProcessingVoice(true);
 
-    // 1. Search / find intent — route to search screen
-    if (
-      lower.includes('find') ||
-      lower.includes('search') ||
-      lower.includes('show me') ||
-      lower.includes('apples under') ||
-      lower.includes('organic') ||
-      lower.includes('under $')
-    ) {
-      setSearchQuery(command);
-      navigateTo('search', 'search');
-      return;
+    // Ensure user stays on the listening screen during processing
+    if (currentScreen !== 'listening') {
+      navigateTo('listening');
     }
 
-    // 2. Remove / delete item intent
-    if (lower.includes('remove') || lower.includes('delete')) {
-      if (lower.includes('banana')) {
-        setShoppingList((prev) =>
-          prev.filter((item) => !item.product.name.toLowerCase().includes('banana'))
-        );
-        showToast('Removed Bananas from shopping list');
-      } else {
-        setShoppingList((prev) => prev.slice(0, -1));
-        showToast('Removed last item from list');
-      }
-      navigateTo('list', 'list');
-      return;
-    }
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 s timeout
 
-    // 3. View list intent
-    if (lower.includes('list') || lower.includes('show my')) {
-      navigateTo('list', 'list');
-      return;
-    }
-
-    // 4. Multi-product voice command parsing
-    const segments = splitVoiceCommand(command);
-    const recognizedItems: VoiceRecognizedItem[] = [];
-
-    for (let i = 0; i < segments.length; i++) {
-      const segText = segments[i];
-      const { quantity, unit } = extractQuantityAndUnit(segText);
-      const matchedProduct = findBestProductMatch(segText, allProducts);
-
-      recognizedItems.push({
-        id: `rec-item-${i}-${Date.now()}`,
-        rawText: segText,
-        product: matchedProduct,
-        quantity: quantity,
-        unit: unit,
+      const response = await fetch('/api/parse-voice-command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcript: command }),
+        signal: controller.signal,
       });
-    }
 
-    // Merge duplicates if same product appears multiple times
-    const mergedMap = new Map<string, VoiceRecognizedItem>();
-    const notFoundList: VoiceRecognizedItem[] = [];
+      clearTimeout(timeoutId);
 
-    for (const item of recognizedItems) {
-      if (item.product) {
-        const existing = mergedMap.get(item.product.id);
-        if (existing) {
-          existing.quantity += item.quantity;
-        } else {
-          mergedMap.set(item.product.id, { ...item });
-        }
-      } else {
-        notFoundList.push(item);
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({ error: `Server error ${response.status}` }));
+        throw new Error(errData.error ?? `Server returned ${response.status}`);
       }
+
+      const parsed: ParsedVoiceIntent = await response.json();
+
+      // Route based on Gemini-extracted intent
+      switch (parsed.intent) {
+        case 'SEARCH': {
+          setSearchQuery(parsed.searchQuery ?? command);
+          navigateTo('search', 'search');
+          break;
+        }
+
+        case 'SHOW_LIST': {
+          navigateTo('list', 'list');
+          break;
+        }
+
+        case 'REMOVE': {
+          const target = (parsed.removeTarget ?? '').toLowerCase().trim();
+          if (target) {
+            setShoppingList(prev =>
+              prev.filter(item => !item.product.name.toLowerCase().includes(target))
+            );
+            showToast(`Removed "${parsed.removeTarget}" from list`);
+          } else {
+            showToast('Removed last item from list');
+            setShoppingList(prev => prev.slice(0, -1));
+          }
+          navigateTo('list', 'list');
+          break;
+        }
+
+        case 'ADD': {
+          if (parsed.items.length === 0) {
+            setVoiceCommandError('No products were found in your command. Please try again.');
+            break;
+          }
+
+          const recognizedItems: VoiceRecognizedItem[] = parsed.items.map((item, i) => ({
+            id: `rec-item-${i}-${Date.now()}`,
+            rawText: item.rawText || command,
+            product: resolveProductFromHint(item.productHint, allProducts),
+            quantity: item.quantity,
+            unit: item.unit,
+          }));
+
+          setVoiceRecognizedItems(recognizedItems);
+          const firstFound = recognizedItems.find(i => i.product !== null);
+          setSelectedProduct(firstFound?.product ?? null);
+          setVoiceQuantity(firstFound?.quantity ?? 1);
+          navigateTo('confirmation');
+          break;
+        }
+
+        default: {
+          // UNKNOWN intent
+          setVoiceCommandError(
+            'I didn\'t understand that command. Try saying something like "Add milk", "Find toothpaste", or "Show my list".'
+          );
+          break;
+        }
+      }
+    } catch (err: any) {
+      const isAbort = err?.name === 'AbortError';
+      setVoiceCommandError(
+        isAbort
+          ? 'Request timed out. Please check your connection and try again.'
+          : `Could not process your command: ${err?.message ?? 'Unknown error. Please try again.'}`
+      );
+    } finally {
+      setIsProcessingVoice(false);
     }
-
-    const finalRecognizedItems: VoiceRecognizedItem[] = [
-      ...Array.from(mergedMap.values()),
-      ...notFoundList,
-    ];
-
-    setVoiceRecognizedItems(finalRecognizedItems);
-
-    const firstFound = finalRecognizedItems.find((i) => i.product !== null);
-    setSelectedProduct(firstFound ? firstFound.product : null);
-    setVoiceQuantity(firstFound ? firstFound.quantity : 1);
-
-    navigateTo('confirmation');
   };
+
 
   const handleAddMultipleToList = (items: { product: Product; quantity: number }[]) => {
     if (items.length === 0) return;
@@ -811,8 +888,12 @@ const splitVoiceCommand = (command: string): string[] => {
               onSubmitCommand={handleProcessVoiceCommand}
               onCancel={() => {
                 stopVoiceRecording();
+                setVoiceCommandError(null);
                 navigateTo(previousScreen || 'home');
               }}
+              isProcessing={isProcessingVoice}
+              errorMessage={voiceCommandError}
+              onClearError={() => setVoiceCommandError(null)}
             />
           )}
 
