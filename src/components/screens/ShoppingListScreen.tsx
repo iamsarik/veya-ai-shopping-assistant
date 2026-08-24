@@ -188,7 +188,7 @@ export const ShoppingListScreen: React.FC<ShoppingListScreenProps> = ({
 
       {/* Sticky Order Summary & Checkout Footer */}
       {items.length > 0 && (
-        <div className="fixed bottom-[78px] left-1/2 -translate-x-1/2 w-full max-w-[390px] px-4 py-3 bg-[#0c0d18]/95 backdrop-blur-xl border-t border-[#20233b] z-30 shadow-[0_-6px_24px_rgba(0,0,0,0.5)]">
+        <div className="fixed bottom-[78px] left-1/2 -translate-x-1/2 w-full max-w-[500px] px-4 py-3 bg-[#0c0d18]/95 backdrop-blur-xl border-t border-[#20233b] z-30 shadow-[0_-6px_24px_rgba(0,0,0,0.5)]">
           <div className="flex flex-col gap-1 mb-2.5">
             <div className="flex justify-between text-[12px] text-[#9da3c2]">
               <span>Subtotal</span>

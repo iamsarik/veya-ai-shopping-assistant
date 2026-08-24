@@ -242,7 +242,7 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
       </section>
 
       {/* Bottom Sticky Add to Cart Control */}
-      <div className="fixed bottom-[78px] left-1/2 -translate-x-1/2 w-full max-w-[390px] px-4 py-3 bg-[#0c0d18]/95 backdrop-blur-xl border-t border-[#20233b] z-30 shadow-[0_-6px_24px_rgba(0,0,0,0.5)] flex items-center gap-3">
+      <div className="fixed bottom-[78px] left-1/2 -translate-x-1/2 w-full max-w-[500px] px-4 py-3 bg-[#0c0d18]/95 backdrop-blur-xl border-t border-[#20233b] z-30 shadow-[0_-6px_24px_rgba(0,0,0,0.5)] flex items-center gap-3">
         {/* Quantity Stepper */}
         <div className="flex items-center gap-2 bg-[#121424] px-3 py-2 rounded-2xl border border-[#252942] shrink-0">
           <button

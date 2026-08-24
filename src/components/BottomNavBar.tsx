@@ -20,7 +20,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   return (
     <nav
       id="bottom-navigation-bar"
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] z-40 flex justify-around items-center px-3 h-[78px] bg-[#0c0d18]/92 backdrop-blur-xl border-t border-[#20233b] shadow-[0_-8px_32px_rgba(0,0,0,0.6)] rounded-t-[28px] select-none"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] z-40 flex justify-around items-center px-3 h-[78px] bg-[#0c0d18]/92 backdrop-blur-xl border-t border-[#20233b] shadow-[0_-8px_32px_rgba(0,0,0,0.6)] rounded-t-[28px] select-none"
     >
       {/* Home Tab */}
       <button

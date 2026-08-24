@@ -854,41 +854,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#07080f] flex flex-col items-center justify-start text-[#f3f4f8] selection:bg-[#7059fd]/30 selection:text-white font-sans antialiased">
-      {/* Top Preview Bar for reviewing all 7 screens */}
-      <ScreenSwitcherBanner
-        currentScreen={currentScreen}
-        onSelectScreen={(screen) => {
-          if (screen === 'search') {
-            setSearchQuery('');
-          }
-          navigateTo(screen);
-        }}
-        isMobileFrame={isMobileFrame}
-        onToggleFrame={() => setIsMobileFrame(!isMobileFrame)}
-      />
-
-      {/* Main App Container */}
-      <div
-        className={`w-full bg-[#0c0d16] flex flex-col relative transition-all duration-300 ${isMobileFrame
-            ? 'max-w-[390px] min-h-[844px] my-3 sm:my-6 rounded-[38px] shadow-[0_25px_60px_rgba(0,0,0,0.85)] border-[4px] border-[#22253d] overflow-hidden'
-            : 'max-w-[540px] min-h-screen shadow-2xl border-x border-[#1e2136]'
-          }`}
-      >
-        {/* iOS Mobile Status Bar in 390px Frame */}
-        {isMobileFrame && (
-          <div className="w-full h-8 bg-[#0c0d16] flex items-center justify-between px-6 pt-2 select-none z-30 border-b border-[#161828]">
-            <span className="text-[12px] font-bold text-[#f3f4f8] tracking-tight">
-              9:41
-            </span>
-            <div className="w-20 h-4 bg-[#05060a] rounded-full mx-auto -mt-1 border border-[#202338]"></div>
-            <div className="flex items-center gap-1.5 text-[#b0b4c8]">
-              <SignalHigh className="w-3.5 h-3.5 stroke-[2.2]" />
-              <Wifi className="w-3.5 h-3.5 stroke-[2.2]" />
-              <BatteryMedium className="w-4 h-4 stroke-[2.2]" />
-            </div>
-          </div>
-        )}
-
+      {/* Main App Container — Fully Native Responsive Layout */}
+      <div className="w-full max-w-[500px] min-h-screen bg-[#0c0d16] flex flex-col relative shadow-2xl sm:border-x sm:border-[#1e2136] mx-auto">
         {/* Clean Minimal Header */}
         <Header
           onBack={handleBack}
