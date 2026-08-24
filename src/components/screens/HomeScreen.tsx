@@ -1,7 +1,8 @@
 import React from 'react';
 import { Product, ShoppingListItem, CategoryInfo } from '../../types';
 import { CATEGORIES } from '../../data/products';
-import { Search, Mic, Plus, Sparkles, RefreshCw } from 'lucide-react';
+import { Search, Mic, Plus, Sparkles, RefreshCw, Sun, ThumbsUp } from 'lucide-react';
+import { getPersonalizedRecommendations, getSeasonalRecommendations } from '../../utils/recommendations';
 
 interface HomeScreenProps {
   onStartListening: () => void;
@@ -24,10 +25,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onSelectCategory,
   onSeeAllCategories,
   featuredProducts,
+  shoppingList,
 }) => {
   // Running low item: Whole Milk
   const runningLowItem = featuredProducts.find((p) => p.id === 'whole-milk') || featuredProducts[0];
-  const pickedForYouItems = featuredProducts.filter((p) => p.id !== 'whole-milk');
+  
+  // Smart Suggestions — Personalized based on user's active list
+  const personalizedItems = getPersonalizedRecommendations(shoppingList, featuredProducts, 4);
+  
+  // Smart Suggestions — Seasonal based on real catalog items & current month
+  const seasonalData = getSeasonalRecommendations(featuredProducts, 4);
 
   return (
     <main className="flex-1 px-4 pt-2.5 pb-[100px] flex flex-col gap-4 relative z-10">
@@ -55,14 +62,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </section>
 
-      {/* Primary Veya Voice Card - Dark Translucent Navy/Violet */}
+      {/* Primary Veya Voice Card */}
       <section>
         <div
           id="veya-primary-voice-card"
           onClick={onStartListening}
           className="relative overflow-hidden rounded-3xl dark-card-subtle p-4 shadow-lg border border-[#2e3352] hover:border-[#7059fd]/60 transition-all cursor-pointer group veya-card-hover"
         >
-          {/* Subtle decorative background glow spots */}
           <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-[#7059fd]/20 blur-2xl pointer-events-none"></div>
           <div className="absolute -bottom-10 -left-10 w-28 h-28 rounded-full bg-[#06b6d4]/15 blur-2xl pointer-events-none"></div>
 
@@ -80,7 +86,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 &ldquo;Your shopping, just say it.&rdquo;
               </p>
 
-              {/* Small example voice command pill */}
               <div
                 onClick={(e) => {
                   e.stopPropagation();
@@ -93,7 +98,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </div>
             </div>
 
-            {/* Signature Glowing Voice Orb */}
             <div className="relative shrink-0">
               <div className="w-[52px] h-[52px] rounded-full veya-voice-gradient veya-voice-glow flex items-center justify-center text-white border-2 border-[#161828] shadow-[0_6px_24px_rgba(112,89,253,0.45)] group-hover:scale-105 transition-transform">
                 <Mic className="w-6 h-6 stroke-[2.4] drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]" />
@@ -103,7 +107,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </section>
 
-      {/* Horizontal Category Carousel with circular images */}
+      {/* Horizontal Category Carousel */}
       <section className="flex flex-col gap-2 pt-1">
         <div className="flex items-center justify-between">
           <h3 className="text-[15px] font-bold text-[#f3f4f8] tracking-tight">
@@ -140,7 +144,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       </section>
 
-      {/* "You may be running low" - Dark rounded Whole Milk card */}
+      {/* "You may be running low" Card */}
       {runningLowItem && (
         <section className="flex flex-col gap-2 pt-1">
           <div className="flex items-center justify-between">
@@ -196,26 +200,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </section>
       )}
 
-      {/* "Picked for you" - Dark 2-column grocery product grid */}
+      {/* 1. PERSONALIZED RECOMMENDATIONS SECTION */}
       <section className="flex flex-col gap-2 pt-1">
         <div className="flex items-center justify-between">
-          <h3 className="text-[15px] font-bold text-[#f3f4f8] tracking-tight">
-            Picked for you
+          <h3 className="text-[15px] font-bold text-[#f3f4f8] tracking-tight flex items-center gap-1.5">
+            <ThumbsUp className="w-4 h-4 text-[#8e7aff] stroke-[2.2]" />
+            <span>Smart Suggestions for You</span>
           </h3>
-          <span className="text-[12px] font-semibold text-[#8e7aff] hover:text-[#a899ff] cursor-pointer transition-colors">
-            View more
+          <span className="text-[11.5px] font-medium text-[#7c819b]">
+            Personalized
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-2.5">
-          {pickedForYouItems.slice(0, 6).map((product) => (
+          {personalizedItems.map((product) => (
             <div
-              key={product.id}
+              key={`pers-${product.id}`}
               onClick={() => onSelectProduct(product)}
               className="bg-[#141626]/90 rounded-2xl p-2.5 border border-[#252942] shadow-sm flex flex-col justify-between relative group cursor-pointer hover:border-[#7059fd]/50 transition-all veya-card-hover"
             >
-              {/* Product Image */}
-              <div className="w-full h-28 bg-[#0d0f1b] rounded-xl overflow-hidden mb-2 p-1.5 flex items-center justify-center border border-[#21243a]">
+              <div className="w-full h-24 bg-[#0d0f1b] rounded-xl overflow-hidden mb-2 p-1.5 flex items-center justify-center border border-[#21243a]">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -224,20 +228,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 />
               </div>
 
-              {/* Product Info */}
               <div className="flex flex-col pr-8">
-                <p className="text-[15.5px] font-extrabold text-[#ffffff]">
-                  ${product.price.toFixed(2)}
-                </p>
-                <h4 className="text-[13.5px] font-bold text-[#f3f4f8] leading-[17px] truncate mt-0.5">
+                <span className="text-[10px] font-bold text-[#8e7aff] uppercase tracking-wider">
+                  {product.category}
+                </span>
+                <h4 className="text-[13px] font-bold text-[#f3f4f8] leading-[16px] truncate mt-0.5">
                   {product.name}
                 </h4>
-                <p className="text-[11.5px] text-[#9da3c2] truncate">
-                  {product.packageSize}
+                <p className="text-[14.5px] font-extrabold text-[#ffffff] mt-1">
+                  ${product.price.toFixed(2)}
                 </p>
               </div>
 
-              {/* Circular purple/violet add (+) button */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -252,6 +254,64 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           ))}
         </div>
       </section>
+
+      {/* 2. SEASONAL RECOMMENDATIONS SECTION */}
+      <section className="flex flex-col gap-2 pt-1">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-[15px] font-bold text-[#f3f4f8] tracking-tight flex items-center gap-1.5">
+              <Sun className="w-4 h-4 text-[#06b6d4] stroke-[2.2]" />
+              <span>{seasonalData.title}</span>
+            </h3>
+            <p className="text-[11.5px] text-[#7c819b] mt-0.5">
+              {seasonalData.subtitle}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5">
+          {seasonalData.products.map((product) => (
+            <div
+              key={`season-${product.id}`}
+              onClick={() => onSelectProduct(product)}
+              className="bg-[#141626]/90 rounded-2xl p-2.5 border border-[#252942] shadow-sm flex flex-col justify-between relative group cursor-pointer hover:border-[#06b6d4]/50 transition-all veya-card-hover"
+            >
+              <div className="w-full h-24 bg-[#0d0f1b] rounded-xl overflow-hidden mb-2 p-1.5 flex items-center justify-center border border-[#21243a]">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300 brightness-95"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+
+              <div className="flex flex-col pr-8">
+                <span className="text-[10px] font-bold text-[#06b6d4] uppercase tracking-wider">
+                  {product.category}
+                </span>
+                <h4 className="text-[13px] font-bold text-[#f3f4f8] leading-[16px] truncate mt-0.5">
+                  {product.name}
+                </h4>
+                <p className="text-[14.5px] font-extrabold text-[#ffffff] mt-1">
+                  ${product.price.toFixed(2)}
+                </p>
+              </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddProduct(product);
+                }}
+                aria-label={`Add ${product.name}`}
+                className="absolute bottom-2.5 right-2.5 w-7 h-7 rounded-full bg-[#06b6d4] text-white hover:bg-[#0891b2] flex items-center justify-center shadow-[0_3px_10px_rgba(6,182,212,0.4)] transition-transform active:scale-90 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
     </main>
   );
 };
+

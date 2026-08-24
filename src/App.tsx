@@ -23,6 +23,13 @@ export default function App() {
   const [isMobileFrame, setIsMobileFrame] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('English');
 
+  // Locale mapping for Web Speech API SpeechRecognition.lang (English & हिन्दी)
+  const LANGUAGE_LOCALE_MAP: Record<string, string> = {
+    English: 'en-US',
+    'हिन्दी': 'hi-IN',
+    Hindi: 'hi-IN',
+  };
+
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -48,7 +55,7 @@ export default function App() {
   const [isListeningMic, setIsListeningMic] = useState(false);
   const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   const [voiceCommandError, setVoiceCommandError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('organic apples under $5');
+  const [searchQuery, setSearchQuery] = useState('');
   const [favoriteProductIds, setFavoriteProductIds] = useState<string[]>(['whole-milk']);
   const speechRecognitionRef = useRef<any>(null);
 
@@ -61,7 +68,7 @@ export default function App() {
         const recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.interimResults = true;
-        recognition.lang = 'en-US';
+        recognition.lang = LANGUAGE_LOCALE_MAP[currentLanguage] || 'en-US';
 
         recognition.onstart = () => {
           setIsListeningMic(true);
@@ -90,12 +97,22 @@ export default function App() {
     }
   }, []);
 
+  // Synchronize SpeechRecognition language whenever currentLanguage changes
+  useEffect(() => {
+    if (speechRecognitionRef.current) {
+      const langCode = LANGUAGE_LOCALE_MAP[currentLanguage] || 'en-US';
+      speechRecognitionRef.current.lang = langCode;
+    }
+  }, [currentLanguage]);
+
   const startVoiceRecording = () => {
     setVoiceTranscript('');
     setVoiceCommandError(null);
     setIsListeningMic(true);
     if (speechRecognitionRef.current) {
       try {
+        const langCode = LANGUAGE_LOCALE_MAP[currentLanguage] || 'en-US';
+        speechRecognitionRef.current.lang = langCode;
         speechRecognitionRef.current.start();
       } catch (e) {
         // Fallback simulation timer if speech api already active
@@ -157,7 +174,7 @@ export default function App() {
     if (tab === 'home') {
       navigateTo('home', 'home');
     } else if (tab === 'search') {
-      setSearchQuery('organic apples under $5');
+      setSearchQuery('');
       navigateTo('search', 'search');
     } else if (tab === 'list') {
       navigateTo('list', 'list');
@@ -624,17 +641,57 @@ export default function App() {
     );
   };
 
-  // Search Results products — covers all 21 categories
+  // Search Results products — supports voice search, price filtering, brand filtering, explicit size constraint & automatic categorization
   const searchResultProducts = allProducts.filter((p) => {
-    const q = searchQuery.toLowerCase();
+    const rawQ = searchQuery.toLowerCase().trim();
+    if (!rawQ) return false;
+
+    // 1. Parse numeric price constraint e.g. "under $5", "under 200", "below 10"
+    const priceMatch = rawQ.match(/(?:under|below|less than|\<=|\<)\s*\$?(\d+(?:\.\d+)?)/i);
+    const maxPriceLimit = priceMatch ? parseFloat(priceMatch[1]) : null;
+
+    if (maxPriceLimit !== null && p.price > maxPriceLimit) {
+      return false;
+    }
+
+    // 2. Parse explicit size constraint e.g. "1 gallon", "500g", "1 liter", "200g", "2kg", "500ml"
+    const sizeMatch = rawQ.match(/\b(\d+(?:\.\d+)?\s*(?:gallon|gallons|liter|liters|litre|litres|kg|g|ml|lb|lbs|oz|pack|block|tub|box|bottle|bottles))\b/i);
+    const requiredSizeExpr = sizeMatch ? sizeMatch[1].toLowerCase().trim() : null;
+
+    if (requiredSizeExpr) {
+      const pSize = (p.packageSize ?? p.size ?? '').toLowerCase();
+      // Ensure all tokens in size expression (e.g. "1" and "gallon") appear in product.packageSize
+      const sizeTokens = requiredSizeExpr.split(/\s+/);
+      const matchesSize = sizeTokens.every((token) => pSize.includes(token));
+      if (!matchesSize) {
+        return false;
+      }
+    }
+
+    // 3. Clean query text by stripping price clauses, size expressions & filler words
+    let cleanedText = rawQ;
+    if (priceMatch) {
+      cleanedText = cleanedText.replace(priceMatch[0], '').trim();
+    }
+    if (sizeMatch) {
+      cleanedText = cleanedText.replace(sizeMatch[0], '').trim();
+    }
+    const q = cleanedText.replace(/\b(products|product|items|item|things|thing|find|search|show|me)\b/gi, '').trim();
+
+    // If query was ONLY a price and/or size constraint (e.g. "products under $5", "1 gallon"), return true for matching products
+    if (!q && (maxPriceLimit !== null || requiredSizeExpr !== null)) {
+      return true;
+    }
+
     const nameL = p.name.toLowerCase();
     const catL = p.category.toLowerCase();
     const brandL = (p.brand ?? '').toLowerCase();
     const tagsL = (p.tags ?? []).map((t) => t.toLowerCase());
     const subcatL = (p.subcategory ?? '').toLowerCase();
+    const packageSizeL = (p.packageSize ?? p.size ?? '').toLowerCase();
 
     const matchesAny = (...terms: string[]) =>
-      terms.some((t) => nameL.includes(t) || brandL.includes(t) || tagsL.some((tag) => tag.includes(t)) || subcatL.includes(t));
+      terms.some((t) => nameL.includes(t) || brandL.includes(t) || tagsL.some((tag) => tag.includes(t)) || subcatL.includes(t) || packageSizeL.includes(t));
 
     // ── Grocery ──────────────────────────────────────────────────────
     if (q.includes('apple')) return matchesAny('apple');
@@ -802,7 +859,7 @@ export default function App() {
         currentScreen={currentScreen}
         onSelectScreen={(screen) => {
           if (screen === 'search') {
-            setSearchQuery('organic apples under $5');
+            setSearchQuery('');
           }
           navigateTo(screen);
         }}
@@ -893,6 +950,8 @@ export default function App() {
               isProcessing={isProcessingVoice}
               errorMessage={voiceCommandError}
               onClearError={() => setVoiceCommandError(null)}
+              currentLanguage={currentLanguage}
+              onLanguageChange={(lang) => setCurrentLanguage(lang)}
             />
           )}
 
@@ -973,6 +1032,8 @@ export default function App() {
               }}
               isFavorite={favoriteProductIds.includes(selectedProduct.id)}
               onToggleFavorite={() => handleToggleFavorite(selectedProduct.id)}
+              allProducts={allProducts}
+              onSelectProduct={handleSelectProduct}
             />
           )}
         </div>

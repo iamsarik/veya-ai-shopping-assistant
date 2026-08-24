@@ -22,7 +22,7 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
   addedProductIds = [],
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
-  const filters = ['All', 'Dairy', 'Produce', 'Bakery', 'Organic', 'Under $4'];
+  const filters = ['All', 'Dairy', 'Produce', 'Bakery', 'Organic', 'Under $5', 'Under $10', 'Samsung', 'Apple', 'Pepsi', "Lay's"];
 
   const filteredResults = results.filter((product) => {
     if (selectedFilter === 'All') return true;
@@ -30,8 +30,15 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
     if (selectedFilter === 'Produce') return product.category === 'Fruits' || product.category === 'Vegetables';
     if (selectedFilter === 'Bakery') return product.category.toLowerCase() === 'bakery';
     if (selectedFilter === 'Organic') return product.isOrganic;
-    if (selectedFilter === 'Under $4') return product.price < 4.0;
-    return true;
+    if (selectedFilter === 'Under $5') return product.price <= 5.0;
+    if (selectedFilter === 'Under $10') return product.price <= 10.0;
+    
+    // Brand filtering — check exact product.brand match against selected filter chip
+    if (product.brand) {
+      return product.brand.toLowerCase() === selectedFilter.toLowerCase();
+    }
+    
+    return false;
   });
 
   return (
@@ -69,7 +76,7 @@ export const VoiceSearchResultsScreen: React.FC<VoiceSearchResultsScreenProps> =
               Voice Search Query
             </p>
             <p className="text-[13.5px] font-bold text-[#f3f4f8] truncate">
-              &ldquo;{query || 'organic milk & fresh produce'}&rdquo;
+              &ldquo;{query || 'Type or speak to search'}&rdquo;
             </p>
           </div>
         </div>

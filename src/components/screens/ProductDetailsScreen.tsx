@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Product } from '../../types';
-import { Minus, Plus, ShoppingBag, Mic, Check, Heart, ShieldCheck, Truck } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, Mic, Check, Heart, ShieldCheck, Truck, RefreshCw } from 'lucide-react';
+import { getSubstituteRecommendations } from '../../utils/recommendations';
 
 interface ProductDetailsScreenProps {
   product: Product;
@@ -8,6 +9,8 @@ interface ProductDetailsScreenProps {
   onStartVoiceWithProduct: (productName: string) => void;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
+  allProducts?: Product[];
+  onSelectProduct?: (product: Product) => void;
 }
 
 export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
@@ -16,6 +19,8 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
   onStartVoiceWithProduct,
   isFavorite = false,
   onToggleFavorite,
+  allProducts = [],
+  onSelectProduct,
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
@@ -30,6 +35,9 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
   };
 
   const totalPrice = (product.price * quantity).toFixed(2);
+
+  // Substitute / Alternative Recommendations from same category
+  const substitutes = getSubstituteRecommendations(product, allProducts, 3);
 
   return (
     <main className="flex-1 px-4 pt-2 pb-[150px] flex flex-col gap-4 relative z-10">
@@ -172,6 +180,58 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
         </section>
       )}
 
+      {/* 3. SUBSTITUTE RECOMMENDATIONS SECTION */}
+      {substitutes.length > 0 && (
+        <section className="flex flex-col gap-2 pt-2 border-t border-[#21243a]">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[13.5px] font-bold text-[#f3f4f8] flex items-center gap-1.5">
+              <RefreshCw className="w-4 h-4 text-[#06b6d4]" />
+              <span>Smart Substitutes & Alternatives</span>
+            </h3>
+            <span className="text-[11px] font-medium text-[#8e7aff]">
+              Same Category
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {substitutes.map((sub) => (
+              <div
+                key={`sub-${sub.id}`}
+                onClick={() => onSelectProduct && onSelectProduct(sub)}
+                className="bg-[#101222] rounded-2xl p-2.5 border border-[#21243a] flex items-center justify-between gap-3 hover:border-[#7059fd]/50 transition-all cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-xl bg-[#0a0c16] overflow-hidden shrink-0 border border-[#1e2136] p-1 flex items-center justify-center">
+                  <img
+                    src={sub.image}
+                    alt={sub.name}
+                    className="w-full h-full object-cover rounded-lg brightness-95"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-[13px] font-bold text-[#f3f4f8] truncate">
+                    {sub.name}
+                  </h4>
+                  <p className="text-[11.5px] text-[#9da3c2]">
+                    {sub.packageSize} • ${sub.price.toFixed(2)}
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddToCart(sub, 1);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-[#7059fd] hover:bg-[#5d44fa] text-white text-[11.5px] font-bold flex items-center gap-1 active:scale-95 transition-all cursor-pointer shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Quality Guarantees */}
       <section className="flex items-center justify-between text-[11.5px] text-[#9da3c2] px-1 py-1">
         <span className="flex items-center gap-1">
@@ -227,3 +287,4 @@ export const ProductDetailsScreen: React.FC<ProductDetailsScreenProps> = ({
     </main>
   );
 };
+

@@ -10,29 +10,8 @@ interface HeaderProps {
   onLanguageChange?: (lang: string) => void;
 }
 
-// 20 supported languages — structure ready for real i18n translations later
-const LANGUAGES: string[] = [
-  'English',
-  'Español',
-  'Français',
-  'Deutsch',
-  '日本語',
-  '中文',
-  'हिन्दी',
-  'العربية',
-  'বাংলা',
-  'Português',
-  'Русский',
-  'Bahasa Indonesia',
-  'اردو',
-  'मराठी',
-  'Tiếng Việt',
-  'తెలుగు',
-  'Türkçe',
-  'தமிழ்',
-  '한국어',
-  'Italiano',
-];
+// Supported languages — English (en-US) and हिन्दी (hi-IN)
+const LANGUAGES: string[] = ['English', 'हिन्दी'];
 
 export const Header: React.FC<HeaderProps> = ({
   onBack,
