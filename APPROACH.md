@@ -12,4 +12,4 @@ To eliminate AI hallucinations and unsafe fuzzy matching (e.g. preventing "socks
 Natural language search extracts price bounds (`under $5`), brand constraints (Samsung, Apple, Pepsi), and package size constraints (`1 gallon`, `500g`, `2kg`), matching them against structured product metadata.
 
 ### 4. Smart Recommendation Engine
-Personalized recommendations use a category-balanced round-robin algorithm with candidate pool randomization based on shopping list history. Seasonal picks and same-category substitute recommendations drive contextual discovery.
+Personalized recommendations use a category-balanced round-robin algorithm with candidate pool randomization based on shopping list history. Seasonal picks and same-category substitute recommendations drive contextual discovery..
